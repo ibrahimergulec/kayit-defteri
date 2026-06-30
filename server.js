@@ -9,8 +9,8 @@ app.use(express.json());
 
 app.use(express.static(path.join(__dirname)));
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseUrl = process.env.SUPABASE_URL || 'https://jpndgvwjygvqbwbtsxgw.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwbmRndndqeWd2cWJ3YnRzeGd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NTI3NjAsImV4cCI6MjA5ODQyODc2MH0.khgauBvRuhWRjDTwgRcF0mu1kmFDbBDKDo-JTsCkWas';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
