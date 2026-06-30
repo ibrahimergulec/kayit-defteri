@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2563eb">
+  <title>📘 Kayıt Defteri</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f3f4f6; 
+      color: #1f2937;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+      padding: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .header h1 { font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem; }
+    .status-badge {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.2);
+    }
+    .status-badge.online { background: #10b981; }
+    .status-badge.offline { background: #ef4444; }
+    
+    .nav {
+      display: flex;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      overflow-x: auto;
+    }
+    .nav-btn {
+      flex: 1;
+      padding: 1rem;
+      border: none;
+      background: none;
+      color: #6b7280;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .nav-btn.active { color: #2563eb; border-bottom: 2px solid #2563eb; }
+    
+    .content { padding: 1rem; max-width: 600px; margin: 0 auto; }
+    
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+    
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-success { background: #10b981; color: white; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-warning { background: #f59e0b; color: white; }
+    .btn-block { width: 100%; margin-top: 0.5rem; }
+    
+    .form-group { margin-bottom: 1rem; }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #374151;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    
+    .customer-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid #f3f4f6;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .customer-item:hover { background: #f9fafb; }
+    .customer-info h3 { font-size: 1rem; color: #111827; }
+    .customer-info p { font-size: 0.875rem; color: #6b7280; }
+    .balance {
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+    .balance.positive { color: #ef4444; }
+    .balance.negative { color: #10b981; }
+    .balance.zero { color: #6b7280; }
+    
+    .transaction-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .transaction-type {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .type-debt { background: #fee2e2; color: #991b1b; }
+    .type-payment { background: #d1fae5; color: #065f46; }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 200;
+      justify-content: center;
+      align-items: flex-end;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: white;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      border-radius: 20px 20px 0 0;
+      padding: 1.5rem;
+      overflow-y: auto;
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .summary-card {
+      background: white;
+      padding: 1rem;
+      border-radius: 12px;
+      text-align: center;
+    }
+    .summary-card h4 { font-size: 0.75rem; color: #6b7280; margin-bottom: 0.5rem; }
+    .summary-card .amount { font-size: 1.25rem; font-weight: 700; }
+    
+    .search-box {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1f2937;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      z-index: 300;
+      display: none;
+    }
+    .toast.show { display: block; animation: fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } }
+    
+    .install-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #2563eb;
+      color: white;
+      border: none;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 12px rgba(37,99,235,0.4);
+      cursor: pointer;
+      z-index: 150;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #6b7280;
+    }
+    .empty-state svg { width: 64px; height: 64px; margin-bottom: 1rem; opacity: 0.3; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📘 Kayıt Defteri</h1>
+    <span class="status-badge" id="statusBadge">Bağlantı kontrol ediliyor...</span>
+  </div>
+  
+  <div class="nav">
+    <button class="nav-btn active" onclick="showPage('customers')">👥 Müşteriler</button>
+    <button class="nav-btn" onclick="showPage('transactions')">📝 Hareketler</button>
+    <button class="nav-btn" onclick="showPage('report')">📊 Rapor</button>
+  </div>
+  
+  <div class="content" id="content"></div>
+  
+  <div class="toast" id="toast"></div>
+  
+  <button class="install-btn" onclick="showAddModal()" title="Yeni Ekle">+</button>
+  
+  <div class="modal" id="modal">
+    <div class="modal-content" id="modalContent"></div>
+  </div>
+
+  <script>
+    // ==================== KONFİGÜRASYON ====================
+    const API_URL = window.location.origin + '/api';
+    const DB_NAME = 'KayitDefteriDB';
+    const DB_VERSION = 1;
+    
+    let db;
+    let customers = [];
+    let transactions = [];
+    let currentPage = 'customers';
+    let isOnline = navigator.onLine;
+    
+    // ==================== INDEXEDDB ====================
+    function initDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          db = request.result;
+          resolve(db);
+        };
+        
+        request.onupgradeneeded = (event) => {
+          const database = event.target.result;
+          
+          if (!database.objectStoreNames.contains('customers')) {
+            const customerStore = database.createObjectStore('customers', { keyPath: 'id' });
+            customerStore.createIndex('name', 'name', { unique: false });
+          }
+          
+          if (!database.objectStoreNames.contains('transactions')) {
+            const transStore = database.createObjectStore('transactions', { keyPath: 'id' });
+            transStore.createIndex('customer_id', 'customer_id', { unique: false });
+            transStore.createIndex('synced', 'synced', { unique: false });
+          }
+          
+          if (!database.objectStoreNames.contains('syncQueue')) {
+            database.createObjectStore('syncQueue', { keyPath: 'id', autoIncrement: true });
+          }
+        };
+      });
+    }
+    
+    async function dbGetAll(storeName) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, 'readonly');
+        const store = tx.objectStore(storeName);
+        const request = store.getAll();
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+    
+    async function dbPut(storeName, data) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, 'readwrite');
+        const store = tx.objectStore(storeName);
+        const request = store.put(data);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+    
+    async function dbDelete(storeName, id) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, 'readwrite');
+        const store = tx.objectStore(storeName);
+        const request = store.delete(id);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    }
+    
+    // ==================== AĞ DURUMU ====================
+    function updateOnlineStatus() {
+      isOnline = navigator.onLine;
+      const badge = document.getElementById('statusBadge');
+      
+      if (isOnline) {
+        badge.textContent = '🟢 Çevrimiçi';
+        badge.classList.add('online');
+        badge.classList.remove('offline');
+        syncData();
+      } else {
+        badge.textContent = '🔴 Çevrimdışı';
+        badge.classList.add('offline');
+        badge.classList.remove('online');
+      }
+    }
+    
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    
+    // ==================== API ====================
+    async function apiCall(endpoint, options = {}) {
+      try {
+        const response = await fetch(`${API_URL}${endpoint}`, {
+          ...options,
+          headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+          }
+        });
+        
+        if (!response.ok) throw new Error('API hatası');
+        return await response.json();
+      } catch (error) {
+        console.error('API Hatası:', error);
+        throw error;
+      }
+    }
+    
+    // ==================== SENKRONİZASYON ====================
+    async function syncData() {
+      if (!isOnline) return;
+      
+      try {
+        const localCustomers = await dbGetAll('customers');
+        const localTransactions = await dbGetAll('transactions');
+        const unsynced = localTransactions.filter(t => !t.synced);
+        
+        if (unsynced.length > 0 || localCustomers.length > 0) {
+          const result = await apiCall('/sync', {
+            method: 'POST',
+            body: JSON.stringify({
+              customers: localCustomers,
+              transactions: unsynced
+            })
+          });
+          
+          for (const customer of result.customers) {
+            await dbPut('customers', customer);
+          }
+          for (const trans of result.transactions) {
+            await dbPut('transactions', { ...trans, synced: true });
+          }
+          
+          showToast('☁️ Senkronizasyon tamamlandı');
+          loadData();
+        }
+      } catch (error) {
+        showToast('⚠️ Senkronizasyon başarısız');
+      }
+    }
+    
+    // ==================== VERİ YÜKLEME ====================
+    async function loadData() {
+      if (isOnline) {
+        try {
+          const [serverCustomers, serverTransactions] = await Promise.all([
+            apiCall('/customers'),
+            apiCall('/transactions/all').catch(() => [])
+          ]);
+          
+          for (const c of serverCustomers) await dbPut('customers', c);
+          for (const t of serverTransactions) await dbPut('transactions', { ...t, synced: true });
+          
+          customers = serverCustomers;
+          transactions = serverTransactions;
+        } catch (error) {
+          customers = await dbGetAll('customers');
+          transactions = await dbGetAll('transactions');
+        }
+      } else {
+        customers = await dbGetAll('customers');
+        transactions = await dbGetAll('transactions');
+      }
+      
+      renderPage();
+    }
+    
+    // ==================== SAYFA RENDER ====================
+    function renderPage() {
+      const content = document.getElementById('content');
+      switch(currentPage) {
+        case 'customers': renderCustomers(content); break;
+        case 'transactions': renderTransactions(content); break;
+        case 'report': renderReport(content); break;
+      }
+    }
+    
+    function showPage(page) {
+      currentPage = page;
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      renderPage();
+    }
+    
+    // ==================== MÜŞTERİLER ====================
+    function renderCustomers(container) {
+      const searchHtml = `<input type="text" class="search-box" placeholder="🔍 Müşteri ara..." oninput="filterCustomers(this.value)">`;
+      
+      if (customers.length === 0) {
+        container.innerHTML = searchHtml + `
+          <div class="empty-state">
+            <h3>Henüz müşteri yok</h3>
+            <p>Alttaki + butonuna tıklayarak müşteri ekleyin</p>
+          </div>`;
+        return;
+      }
+      
+      let html = searchHtml + '<div id="customerList">';
+      
+      customers.sort((a, b) => a.name.localeCompare(b.name)).forEach(customer => {
+        const balanceClass = customer.balance > 0 ? 'positive' : customer.balance < 0 ? 'negative' : 'zero';
+        const balanceText = customer.balance > 0 ? `₺${parseFloat(customer.balance).toFixed(2)}` : 
+                           customer.balance < 0 ? `-₺${Math.abs(parseFloat(customer.balance)).toFixed(2)}` : '₺0.00';
+        
+        html += `
+          <div class="customer-item" onclick="showCustomerDetail('${customer.id}')">
+            <div class="customer-info">
+              <h3>${customer.name}</h3>
+              <p>📞 ${customer.phone || 'Telefon yok'}</p>
+            </div>
+            <div class="balance ${balanceClass}">${balanceText}</div>
+          </div>`;
+      });
+      
+      html += '</div>';
+      container.innerHTML = html;
+    }
+    
+    function filterCustomers(query) {
+      const items = document.querySelectorAll('.customer-item');
+      items.forEach(item => {
+        const name = item.querySelector('h3').textContent.toLowerCase();
+        item.style.display = name.includes(query.toLowerCase()) ? 'flex' : 'none';
+      });
+    }
+    
+    // ==================== MÜŞTERİ DETAY ====================
+    async function showCustomerDetail(customerId) {
+      const customer = customers.find(c => c.id === customerId);
+      const customerTransactions = transactions.filter(t => t.customer_id === customerId)
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+      
+      const modal = document.getElementById('modal');
+      const content = document.getElementById('modalContent');
+      
+      const balanceClass = customer.balance > 0 ? 'positive' : customer.balance < 0 ? 'negative' : 'zero';
+      
+      let html = `
+        <div class="card-header">
+          <h2>${customer.name}</h2>
+          <button class="btn btn-danger" onclick="closeModal()">✕</button>
+        </div>
+        
+        <div class="card" style="text-align: center;">
+          <h4 style="color: #6b7280; margin-bottom: 0.5rem;">Güncel Bakiye</h4>
+          <div class="balance ${balanceClass}" style="font-size: 2rem;">
+            ₺${Math.abs(parseFloat(customer.balance)).toFixed(2)}
+          </div>
+          <p style="color: #6b7280; margin-top: 0.5rem;">
+            ${customer.balance > 0 ? 'Borçlu' : customer.balance < 0 ? 'Alacaklı' : 'Bakiye yok'}
+          </p>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;">
+          <button class="btn btn-danger" onclick="showTransactionForm('${customerId}', 'debt')">➕ Borç Ekle</button>
+          <button class="btn btn-success" onclick="showTransactionForm('${customerId}', 'payment')">💵 Ödeme Al</button>
+        </div>
+        
+        <h3 style="margin-bottom: 0.75rem;">📝 Hareket Geçmişi</h3>`;
+      
+      if (customerTransactions.length === 0) {
+        html += '<p style="color: #6b7280; text-align: center;">Henüz hareket yok</p>';
+      } else {
+        html += '<div style="max-height: 300px; overflow-y: auto;">';
+        customerTransactions.forEach(t => {
+          const typeClass = t.type === 'debt' ? 'type-debt' : 'type-payment';
+          const typeText = t.type === 'debt' ? 'Borç' : 'Ödeme';
+          const sign = t.type === 'debt' ? '+' : '-';
+          
+          html += `
+            <div class="transaction-item">
+              <div>
+                <span class="transaction-type ${typeClass}">${typeText}</span>
+                <p style="font-size: 0.8rem; color: #6b7280; margin-top: 0.25rem;">${new Date(t.date).toLocaleDateString('tr-TR')}</p>
+                <p style="font-size: 0.8rem; color: #374151;">${t.description || ''}</p>
+              </div>
+              <div style="font-weight: 700; color: ${t.type === 'debt' ? '#ef4444' : '#10b981'};">
+                ${sign}₺${parseFloat(t.amount).toFixed(2)}
+              </div>
+            </div>`;
+        });
+        html += '</div>';
+      }
+      
+      content.innerHTML = html;
+      modal.classList.add('active');
+    }
+    
+    // ==================== HAREKET EKLEME ====================
+    function showTransactionForm(customerId, type) {
+      const content = document.getElementById('modalContent');
+      const typeText = type === 'debt' ? 'Borç Ekle' : 'Ödeme Al';
+      const btnClass = type === 'debt' ? 'btn-danger' : 'btn-success';
+      
+      content.innerHTML = `
+        <div class="card-header">
+          <h2>${typeText}</h2>
+          <button class="btn btn-danger" onclick="closeModal()">✕</button>
+        </div>
+        
+        <form onsubmit="addTransaction(event, '${customerId}', '${type}')">
+          <div class="form-group">
+            <label>Tutar (₺)</label>
+            <input type="number" step="0.01" id="amount" required placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label>Açıklama</label>
+            <input type="text" id="description" placeholder="Örn: Malzeme alımı">
+          </div>
+          <div class="form-group">
+            <label>Tarih</label>
+            <input type="date" id="transDate" value="${new Date().toISOString().split('T')[0]}">
+          </div>
+          <button type="submit" class="btn ${btnClass} btn-block">${typeText}</button>
+        </form>`;
+    }
+    
+    async function addTransaction(event, customerId, type) {
+      event.preventDefault();
+      
+      const amount = parseFloat(document.getElementById('amount').value);
+      const description = document.getElementById('description').value;
+      const date = document.getElementById('transDate').value;
+      
+      const transaction = {
+        id: crypto.randomUUID(),
+        customer_id: customerId,
+        type,
+        amount,
+        description,
+        date: new Date(date).toISOString(),
+        synced: false,
+        created_at: new Date().toISOString()
+      };
+      
+      await dbPut('transactions', transaction);
+      
+      const customer = customers.find(c => c.id === customerId);
+      const oldBalance = parseFloat(customer.balance) || 0;
+      const newBalance = type === 'debt' ? oldBalance + amount : oldBalance - amount;
+      
+      customer.balance = newBalance;
+      customer.updated_at = new Date().toISOString();
+      await dbPut('customers', customer);
+      
+      await dbPut('syncQueue', {
+        type: 'transaction',
+        data: transaction,
+        timestamp: new Date().toISOString()
+      });
+      
+      transactions.push(transaction);
+      
+      showToast(`${type === 'debt' ? 'Borç' : 'Ödeme'} kaydedildi`);
+      closeModal();
+      
+      if (isOnline) syncData();
+      else renderPage();
+    }
+    
+    // ==================== MÜŞTERİ EKLEME ====================
+    function showAddModal() {
+      const modal = document.getElementById('modal');
+      const content = document.getElementById('modalContent');
+      
+      content.innerHTML = `
+        <div class="card-header">
+          <h2>👤 Yeni Müşteri</h2>
+          <button class="btn btn-danger" onclick="closeModal()">✕</button>
+        </div>
+        
+        <form onsubmit="addCustomer(event)">
+          <div class="form-group">
+            <label>Ad Soyad / Firma Adı *</label>
+            <input type="text" id="custName" required placeholder="Örn: Ahmet Yılmaz">
+          </div>
+          <div class="form-group">
+            <label>Telefon</label>
+            <input type="tel" id="custPhone" placeholder="0555 123 4567">
+          </div>
+          <div class="form-group">
+            <label>Adres</label>
+            <input type="text" id="custAddress" placeholder="İstanbul, Türkiye">
+          </div>
+          <div class="form-group">
+            <label>Vergi No / TC</label>
+            <input type="text" id="custTax" placeholder="1234567890">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">💾 Kaydet</button>
+        </form>`;
+      
+      modal.classList.add('active');
+    }
+    
+    async function addCustomer(event) {
+      event.preventDefault();
+      
+      const customer = {
+        id: crypto.randomUUID(),
+        name: document.getElementById('custName').value,
+        phone: document.getElementById('custPhone').value,
+        address: document.getElementById('custAddress').value,
+        tax_number: document.getElementById('custTax').value,
+        balance: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      await dbPut('customers', customer);
+      customers.push(customer);
+      
+      await dbPut('syncQueue', {
+        type: 'customer',
+        data: customer,
+        timestamp: new Date().toISOString()
+      });
+      
+      showToast('Müşteri eklendi');
+      closeModal();
+      
+      if (isOnline) syncData();
+      else renderPage();
+    }
+    
+    // ==================== TÜM HAREKETLER ====================
+    function renderTransactions(container) {
+      const allTrans = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+      
+      if (allTrans.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <h3>Henüz hareket yok</h3>
+            <p>Müşteri detayından hareket ekleyebilirsiniz</p>
+          </div>`;
+        return;
+      }
+      
+      let html = '<h3 style="margin-bottom: 1rem;">📝 Son Hareketler</h3>';
+      
+      allTrans.slice(0, 50).forEach(t => {
+        const customer = customers.find(c => c.id === t.customer_id);
+        const typeClass = t.type === 'debt' ? 'type-debt' : 'type-payment';
+        const typeText = t.type === 'debt' ? 'Borç' : 'Ödeme';
+        
+        html += `
+          <div class="card">
+            <div class="transaction-item" style="border-bottom: none;">
+              <div>
+                <strong>${customer ? customer.name : 'Bilinmeyen'}</strong>
+                <span class="transaction-type ${typeClass}" style="margin-left: 0.5rem;">${typeText}</span>
+                <p style="font-size: 0.8rem; color: #6b7280; margin-top: 0.25rem;">
+                  ${new Date(t.date).toLocaleDateString('tr-TR')} • ${t.description || 'Açıklama yok'}
+                </p>
+              </div>
+              <div style="font-weight: 700; font-size: 1.1rem; color: ${t.type === 'debt' ? '#ef4444' : '#10b981'};">
+                ${t.type === 'debt' ? '+' : '-'}₺${parseFloat(t.amount).toFixed(2)}
+              </div>
+            </div>
+          </div>`;
+      });
+      
+      container.innerHTML = html;
+    }
+    
+    // ==================== RAPOR ====================
+    function renderReport(container) {
+      const totalDebt = customers.filter(c => c.balance > 0).reduce((sum, c) => sum + parseFloat(c.balance), 0);
+      const totalCredit = customers.filter(c => c.balance < 0).reduce((sum, c) => sum + parseFloat(c.balance), 0);
+      const netBalance = totalDebt + totalCredit;
+      
+      const debtors = customers.filter(c => c.balance > 0).sort((a, b) => b.balance - a.balance);
+      const creditors = customers.filter(c => c.balance < 0).sort((a, b) => a.balance - b.balance);
+      
+      let html = `
+        <div class="summary-grid">
+          <div class="summary-card">
+            <h4>📤 Toplam Borç</h4>
+            <div class="amount" style="color: #ef4444;">₺${totalDebt.toFixed(2)}</div>
+          </div>
+          <div class="summary-card">
+            <h4>📥 Toplam Alacak</h4>
+            <div class="amount" style="color: #10b981;">₺${Math.abs(totalCredit).toFixed(2)}</div>
+          </div>
+        </div>
+        
+        <div class="card" style="text-align: center; margin-bottom: 1rem;">
+          <h4 style="color: #6b7280; margin-bottom: 0.5rem;">Net Bakiye</h4>
+          <div class="amount" style="font-size: 1.75rem; color: ${netBalance >= 0 ? '#ef4444' : '#10b981'};">
+            ₺${Math.abs(netBalance).toFixed(2)}
+          </div>
+          <p style="color: #6b7280; margin-top: 0.5rem;">${netBalance >= 0 ? 'Borçlusunuz' : 'Alacaklısınız'}</p>
+        </div>
+        
+        <h3 style="margin-bottom: 0.75rem;">🔴 Borçlu Müşteriler</h3>`;
+      
+      if (debtors.length === 0) {
+        html += '<p style="color: #6b7280; margin-bottom: 1rem;">Borçlu müşteri yok</p>';
+      } else {
+        debtors.forEach(c => {
+          html += `
+            <div class="customer-item" onclick="showCustomerDetail('${c.id}')">
+              <div class="customer-info"><h3>${c.name}</h3></div>
+              <div class="balance positive">₺${parseFloat(c.balance).toFixed(2)}</div>
+            </div>`;
+        });
+      }
+      
+      html += `<h3 style="margin: 1rem 0 0.75rem;">🟢 Alacaklı Müşteriler</h3>`;
+      
+      if (creditors.length === 0) {
+        html += '<p style="color: #6b7280;">Alacaklı müşteri yok</p>';
+      } else {
+        creditors.forEach(c => {
+          html += `
+            <div class="customer-item" onclick="showCustomerDetail('${c.id}')">
+              <div class="customer-info"><h3>${c.name}</h3></div>
+              <div class="balance negative">-₺${Math.abs(parseFloat(c.balance)).toFixed(2)}</div>
+            </div>`;
+        });
+      }
+      
+      container.innerHTML = html;
+    }
+    
+    // ==================== YARDIMCI ====================
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+      renderPage();
+    }
+    
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+    
+    document.getElementById('modal').addEventListener('click', (e) => {
+      if (e.target.id === 'modal') closeModal();
+    });
+    
+    // ==================== BAŞLATMA ====================
+    async function init() {
+      await initDB();
+      updateOnlineStatus();
+      await loadData();
+    }
+    
+    init();
+  </script>
+</body>
+</html>
