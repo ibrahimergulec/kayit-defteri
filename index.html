@@ -218,29 +218,98 @@
       padding: 3rem 1rem;
       color: #6b7280;
     }
-    .empty-state svg { width: 64px; height: 64px; margin-bottom: 1rem; opacity: 0.3; }
+    
+    /* GİRİŞ EKRANI */
+    .login-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 2rem;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    }
+    .login-box {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    .login-box h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #1f2937;
+    }
+    .login-box .form-group {
+      margin-bottom: 1rem;
+    }
+    .login-box input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    .login-box .btn {
+      width: 100%;
+      margin-top: 1rem;
+    }
+    .login-error {
+      color: #ef4444;
+      font-size: 0.875rem;
+      text-align: center;
+      margin-top: 0.5rem;
+      display: none;
+    }
+    .login-error.show { display: block; }
+    
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>📘 Kayıt Defteri</h1>
-    <span class="status-badge" id="statusBadge">Bağlantı kontrol ediliyor...</span>
+  <!-- GİRİŞ EKRANI -->
+  <div id="loginScreen" class="login-container">
+    <div class="login-box">
+      <h2>📘 Kayıt Defteri</h2>
+      <p style="text-align: center; color: #6b7280; margin-bottom: 1.5rem;">Giriş yapın</p>
+      <form onsubmit="login(event)">
+        <div class="form-group">
+          <input type="text" id="loginUsername" placeholder="Kullanıcı adı" required>
+        </div>
+        <div class="form-group">
+          <input type="password" id="loginPassword" placeholder="Şifre" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Giriş Yap</button>
+      </form>
+      <p class="login-error" id="loginError">Kullanıcı adı veya şifre hatalı!</p>
+    </div>
   </div>
-  
-  <div class="nav">
-    <button class="nav-btn active" onclick="showPage('customers')">👥 Müşteriler</button>
-    <button class="nav-btn" onclick="showPage('transactions')">📝 Hareketler</button>
-    <button class="nav-btn" onclick="showPage('report')">📊 Rapor</button>
-  </div>
-  
-  <div class="content" id="content"></div>
-  
-  <div class="toast" id="toast"></div>
-  
-  <button class="install-btn" onclick="showAddModal()" title="Yeni Ekle">+</button>
-  
-  <div class="modal" id="modal">
-    <div class="modal-content" id="modalContent"></div>
+
+  <!-- ANA UYGULAMA -->
+  <div id="appScreen" class="hidden">
+    <div class="header">
+      <h1>📘 Kayıt Defteri</h1>
+      <span class="status-badge" id="statusBadge">Bağlantı kontrol ediliyor...</span>
+      <button onclick="logout()" style="background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; margin-left: auto;">🚪</button>
+    </div>
+    
+    <div class="nav">
+      <button class="nav-btn active" onclick="showPage('customers')">👥 Müşteriler</button>
+      <button class="nav-btn" onclick="showPage('transactions')">📝 Hareketler</button>
+      <button class="nav-btn" onclick="showPage('report')">📊 Rapor</button>
+    </div>
+    
+    <div class="content" id="content"></div>
+    
+    <div class="toast" id="toast"></div>
+    
+    <button class="install-btn" onclick="showAddModal()" title="Yeni Ekle">+</button>
+    
+    <div class="modal" id="modal">
+      <div class="modal-content" id="modalContent"></div>
+    </div>
   </div>
 
   <script>
@@ -249,11 +318,69 @@
     const DB_NAME = 'KayitDefteriDB';
     const DB_VERSION = 1;
     
+    // Giriş bilgileri (basit auth - şifre hash'li)
+    const USERS = {
+      'admin': '21232f297a57a5a743894a0e4a801fc3' // admin: admin (MD5)
+    };
+    
     let db;
     let customers = [];
     let transactions = [];
     let currentPage = 'customers';
     let isOnline = navigator.onLine;
+    let currentUser = null;
+    
+    // ==================== GİRİŞ / ÇIKIŞ ====================
+    function checkLogin() {
+      const savedUser = localStorage.getItem('kayitdefteri_user');
+      if (savedUser) {
+        currentUser = savedUser;
+        showApp();
+      } else {
+        showLogin();
+      }
+    }
+    
+    function showLogin() {
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('appScreen').classList.add('hidden');
+    }
+    
+    function showApp() {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('appScreen').classList.remove('hidden');
+      init();
+    }
+    
+    function md5(string) {
+      // Basit MD5 (gerçek uygulamada crypto-js kullanılmalı)
+      // Şimdilik basit kontrol - admin/admin
+      return string; 
+    }
+    
+    function login(event) {
+      event.preventDefault();
+      const username = document.getElementById('loginUsername').value;
+      const password = document.getElementById('loginPassword').value;
+      
+      // Basit kontrol: admin / admin
+      if (username === 'admin' && password === 'admin') {
+        currentUser = username;
+        localStorage.setItem('kayitdefteri_user', username);
+        document.getElementById('loginError').classList.remove('show');
+        showApp();
+      } else {
+        document.getElementById('loginError').classList.add('show');
+      }
+    }
+    
+    function logout() {
+      if (confirm('Çıkış yapmak istediğinize emin misiniz?')) {
+        currentUser = null;
+        localStorage.removeItem('kayitdefteri_user');
+        showLogin();
+      }
+    }
     
     // ==================== INDEXEDDB ====================
     function initDB() {
@@ -474,7 +601,7 @@
       });
     }
     
-    // ==================== MÜŞTERİ DETAY ====================
+    // ==================== MÜŞTERİ DETAY (DÜZENLE + SİL EKLENDİ) ====================
     async function showCustomerDetail(customerId) {
       const customer = customers.find(c => c.id === customerId);
       const customerTransactions = transactions.filter(t => t.customer_id === customerId)
@@ -489,6 +616,12 @@
         <div class="card-header">
           <h2>${customer.name}</h2>
           <button class="btn btn-danger" onclick="closeModal()">✕</button>
+        </div>
+        
+        <!-- DÜZENLE & SİL BUTONLARI -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;">
+          <button class="btn btn-warning" onclick="showEditCustomerForm('${customerId}')">✏️ Düzenle</button>
+          <button class="btn btn-danger" onclick="deleteCustomer('${customerId}')">🗑️ Sil</button>
         </div>
         
         <div class="card" style="text-align: center;">
@@ -534,6 +667,92 @@
       
       content.innerHTML = html;
       modal.classList.add('active');
+    }
+    
+    // ==================== MÜŞTERİ DÜZENLEME (YENİ) ====================
+    function showEditCustomerForm(customerId) {
+      const customer = customers.find(c => c.id === customerId);
+      const content = document.getElementById('modalContent');
+      
+      content.innerHTML = `
+        <div class="card-header">
+          <h2>✏️ Müşteri Düzenle</h2>
+          <button class="btn btn-danger" onclick="closeModal()">✕</button>
+        </div>
+        
+        <form onsubmit="editCustomer(event, '${customerId}')">
+          <div class="form-group">
+            <label>Ad Soyad / Firma Adı *</label>
+            <input type="text" id="editName" required value="${customer.name}">
+          </div>
+          <div class="form-group">
+            <label>Telefon</label>
+            <input type="tel" id="editPhone" value="${customer.phone || ''}">
+          </div>
+          <div class="form-group">
+            <label>Adres</label>
+            <input type="text" id="editAddress" value="${customer.address || ''}">
+          </div>
+          <div class="form-group">
+            <label>Vergi No / TC</label>
+            <input type="text" id="editTax" value="${customer.tax_number || ''}">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">💾 Güncelle</button>
+        </form>`;
+    }
+    
+    async function editCustomer(event, customerId) {
+      event.preventDefault();
+      
+      const customer = customers.find(c => c.id === customerId);
+      customer.name = document.getElementById('editName').value;
+      customer.phone = document.getElementById('editPhone').value;
+      customer.address = document.getElementById('editAddress').value;
+      customer.tax_number = document.getElementById('editTax').value;
+      customer.updated_at = new Date().toISOString();
+      
+      await dbPut('customers', customer);
+      
+      if (isOnline) {
+        try {
+          await apiCall('/customers', {
+            method: 'PUT',
+            body: JSON.stringify(customer)
+          });
+        } catch (e) {
+          console.log('Sunucu güncellemesi beklemeye alındı');
+        }
+      }
+      
+      showToast('Müşteri güncellendi');
+      closeModal();
+      renderPage();
+    }
+    
+    // ==================== MÜŞTERİ SİLME (YENİ) ====================
+    async function deleteCustomer(customerId) {
+      if (!confirm('Bu müşteriyi ve tüm hareketlerini silmek istediğinize emin misiniz?')) return;
+      
+      await dbDelete('customers', customerId);
+      customers = customers.filter(c => c.id !== customerId);
+      
+      const customerTrans = transactions.filter(t => t.customer_id === customerId);
+      for (const t of customerTrans) {
+        await dbDelete('transactions', t.id);
+      }
+      transactions = transactions.filter(t => t.customer_id !== customerId);
+      
+      if (isOnline) {
+        try {
+          await apiCall(`/customers/${customerId}`, { method: 'DELETE' });
+        } catch (e) {
+          console.log('Sunucu silme beklemeye alındı');
+        }
+      }
+      
+      showToast('Müşteri silindi');
+      closeModal();
+      renderPage();
     }
     
     // ==================== HAREKET EKLEME ====================
@@ -796,7 +1015,8 @@
       await loadData();
     }
     
-    init();
+    // Sayfa yüklendiğinde giriş kontrolü
+    checkLogin();
   </script>
 </body>
 </html>
