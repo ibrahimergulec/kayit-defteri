@@ -10,9 +10,9 @@ app.use(express.json());
 // Statik dosyalar (frontend)
 app.use(express.static(path.join(__dirname)));
 
-// Supabase bağlantısı - RENDER'DA ENVIRONMENT VARIABLE OLARAK GELECEK
-const supabaseUrl = process.env.SUPABASE_URL || 'https://jpndgvwjygvqbwbtsxgw.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY || 'YOUR_ANON_KEY_HERE';
+// Supabase bağlantısı
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -28,6 +28,22 @@ app.get('/api/customers', async (req, res) => {
     
     if (error) throw error;
     res.json(data || []);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Tek müşteri getir
+app.get('/api/customers/:id', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('customers')
+      .select('*')
+      .eq('id', req.params.id)
+      .single();
+    
+    if (error) throw error;
+    res.json(data);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -51,9 +67,35 @@ app.post('/api/customers', async (req, res) => {
   }
 });
 
+// Müşteri güncelle (YENİ - DÜZENLEME İÇİN)
+app.put('/api/customers/:id', async (req, res) => {
+  try {
+    const { name, phone, address, tax_number, balance } = req.body;
+    
+    const { data, error } = await supabase
+      .from('customers')
+      .update({ name, phone, address, tax_number, balance, updated_at: new Date().toISOString() })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Müşteri sil
 app.delete('/api/customers/:id', async (req, res) => {
   try {
+    // Önce müşterinin hareketlerini sil (cascade çalışmalı ama garanti olsun)
+    await supabase
+      .from('transactions')
+      .delete()
+      .eq('customer_id', req.params.id);
+    
+    // Sonra müşteriyi sil
     const { error } = await supabase
       .from('customers')
       .delete()
@@ -67,6 +109,21 @@ app.delete('/api/customers/:id', async (req, res) => {
 });
 
 // ============ CARİ HAREKETLER ============
+
+// Tüm hareketleri getir (YENİ - SYNC İÇİN)
+app.get('/api/transactions', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .order('date', { ascending: false });
+    
+    if (error) throw error;
+    res.json(data || []);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Müşterinin tüm hareketlerini getir
 app.get('/api/transactions/:customerId', async (req, res) => {
@@ -127,7 +184,8 @@ app.post('/api/transactions', async (req, res) => {
   }
 });
 
-// Bakiye raporu
+// ============ RAPOR ============
+
 app.get('/api/report', async (req, res) => {
   try {
     const { data: customers, error } = await supabase
@@ -153,24 +211,68 @@ app.get('/api/report', async (req, res) => {
   }
 });
 
-// Sync endpoint (offline verileri senkronize et)
+// ============ SYNC (SENKRONİZASYON) ============
+
 app.post('/api/sync', async (req, res) => {
   try {
     const { customers: newCustomers, transactions: newTransactions } = req.body;
     
     // Toplu müşteri ekleme/güncelleme
     if (newCustomers && newCustomers.length > 0) {
-      await supabase.from('customers').upsert(newCustomers);
+      for (const customer of newCustomers) {
+        const { data: existing } = await supabase
+          .from('customers')
+          .select('id')
+          .eq('id', customer.id)
+          .single();
+        
+        if (existing) {
+          // Güncelle
+          await supabase
+            .from('customers')
+            .update({
+              name: customer.name,
+              phone: customer.phone,
+              address: customer.address,
+              tax_number: customer.tax_number,
+              balance: customer.balance,
+              updated_at: customer.updated_at || new Date().toISOString()
+            })
+            .eq('id', customer.id);
+        } else {
+          // Yeni ekle
+          await supabase.from('customers').insert([customer]);
+        }
+      }
     }
     
     // Toplu hareket ekleme
     if (newTransactions && newTransactions.length > 0) {
-      await supabase.from('transactions').insert(newTransactions);
+      for (const trans of newTransactions) {
+        // Aynı ID'li hareket var mı kontrol et
+        const { data: existing } = await supabase
+          .from('transactions')
+          .select('id')
+          .eq('id', trans.id)
+          .single();
+        
+        if (!existing) {
+          await supabase.from('transactions').insert([{
+            id: trans.id,
+            customer_id: trans.customer_id,
+            type: trans.type,
+            amount: trans.amount,
+            description: trans.description,
+            date: trans.date,
+            created_at: trans.created_at || new Date().toISOString()
+          }]);
+        }
+      }
     }
     
     // Güncel verileri döndür
-    const { data: allCustomers } = await supabase.from('customers').select('*');
-    const { data: allTransactions } = await supabase.from('transactions').select('*');
+    const { data: allCustomers } = await supabase.from('customers').select('*').order('name');
+    const { data: allTransactions } = await supabase.from('transactions').select('*').order('date', { ascending: false });
     
     res.json({
       customers: allCustomers || [],
@@ -178,13 +280,21 @@ app.post('/api/sync', async (req, res) => {
       sync_time: new Date().toISOString()
     });
   } catch (error) {
+    console.error('Sync hatası:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Ana sayfa (index.html)
+// ============ ANA SAYFA ============
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// ============ SAĞLIK KONTROLÜ ============
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', time: new Date().toISOString() });
 });
 
 const PORT = process.env.PORT || 3000;
