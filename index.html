@@ -396,26 +396,31 @@
     }
     
     function login(event) {
-      event.preventDefault();
-      
-      const username = document.getElementById('loginUsername').value.trim();
-      const password = document.getElementById('loginPassword').value;
-      
-      initUsers(); // Kullanıcıları yükle
-      
-      const user = users.find(u => u.username === username && u.password === password);
-      
-      if (user) {
-        currentUser = username;
-        localStorage.setItem('kayitdefteri_user', username);
-        document.getElementById('loginError').classList.remove('show');
-        showApp();
-      } else {
-        document.getElementById('loginError').classList.add('show');
-      }
-      
-      return false;
-    }
+  event.preventDefault();
+  
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  
+  initUsers(); // Kullanıcıları yükle
+  
+  console.log('Giriş denemesi:', username, password);
+  console.log('Tüm kullanıcılar:', users);
+  
+  const user = users.find(u => u.username === username && u.password === password);
+  
+  console.log('Bulunan kullanıcı:', user);
+  
+  if (user) {
+    currentUser = username;
+    localStorage.setItem('kayitdefteri_user', username);
+    document.getElementById('loginError').classList.remove('show');
+    showApp();
+  } else {
+    document.getElementById('loginError').classList.add('show');
+  }
+  
+  return false;
+}
     
     function logout() {
       if (confirm('Çıkış yapmak istediğinize emin misiniz?')) {
@@ -541,30 +546,43 @@
     }
     
     function addUser(event) {
-      event.preventDefault();
-      
-      const username = document.getElementById('newUsername').value.trim();
-      const password = document.getElementById('newUserPassword').value;
-      const role = document.getElementById('newUserRole').value;
-      const msgEl = document.getElementById('userMessage');
-      
-      if (users.find(u => u.username === username)) {
-        msgEl.textContent = '❌ Bu kullanıcı adı zaten var!';
-        msgEl.style.color = '#ef4444';
-        return;
-      }
-      
-      users.push({ username, password, role });
-      saveUsers();
-      
-      msgEl.textContent = '✅ Kullanıcı eklendi!';
-      msgEl.style.color = '#10b981';
-      
-      document.getElementById('newUsername').value = '';
-      document.getElementById('newUserPassword').value = '';
-      
-      setTimeout(() => showSettings(), 500);
-    }
+  event.preventDefault();
+  
+  const username = document.getElementById('newUsername').value.trim();
+  const password = document.getElementById('newUserPassword').value;
+  const role = document.getElementById('newUserRole').value;
+  const msgEl = document.getElementById('userMessage');
+  
+  console.log('Yeni kullanıcı:', username, 'Şifre:', password, 'Rol:', role);
+  console.log('Mevcut kullanıcılar:', users);
+  
+  if (users.find(u => u.username === username)) {
+    msgEl.textContent = '❌ Bu kullanıcı adı zaten var!';
+    msgEl.style.color = '#ef4444';
+    return;
+  }
+  
+  // Yeni kullanıcıyı ekle
+  const newUser = { username: username, password: password, role: role };
+  users.push(newUser);
+  
+  console.log('Kullanıcılar güncellendi:', users);
+  
+  // Kaydet
+  saveUsers();
+  
+  // Kontrol et
+  const saved = localStorage.getItem('kayitdefteri_users');
+  console.log('localStorage:', saved);
+  
+  msgEl.textContent = '✅ Kullanıcı eklendi!';
+  msgEl.style.color = '#10b981';
+  
+  document.getElementById('newUsername').value = '';
+  document.getElementById('newUserPassword').value = '';
+  
+  setTimeout(() => showSettings(), 500);
+}
     
     function deleteUser(username) {
       if (!confirm(`'${username}' kullanıcısını silmek istediğinize emin misiniz?`)) return;
