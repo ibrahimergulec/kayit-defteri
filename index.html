@@ -22,8 +22,11 @@
       top: 0;
       z-index: 100;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
-    .header h1 { font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem; }
+    .header h1 { font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem; flex: 1; }
     .status-badge {
       font-size: 0.7rem;
       padding: 0.2rem 0.5rem;
@@ -79,7 +82,9 @@
     .btn-success { background: #10b981; color: white; }
     .btn-danger { background: #ef4444; color: white; }
     .btn-warning { background: #f59e0b; color: white; }
+    .btn-gray { background: #6b7280; color: white; }
     .btn-block { width: 100%; margin-top: 0.5rem; }
+    .btn-small { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
     
     .form-group { margin-bottom: 1rem; }
     .form-group label {
@@ -265,6 +270,24 @@
     }
     .login-error.show { display: block; }
     
+    /* AYARLAR PANELİ */
+    .settings-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0.25rem;
+    }
+    
+    .user-list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
     .hidden { display: none !important; }
   </style>
 </head>
@@ -292,7 +315,8 @@
     <div class="header">
       <h1>📘 Kayıt Defteri</h1>
       <span class="status-badge" id="statusBadge">Bağlantı kontrol ediliyor...</span>
-      <button onclick="logout()" style="background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; margin-left: auto;">🚪</button>
+      <button class="settings-btn" onclick="showSettings()" title="Ayarlar">⚙️</button>
+      <button class="settings-btn" onclick="logout()" title="Çıkış">🚪</button>
     </div>
     
     <div class="nav">
@@ -318,10 +342,9 @@
     const DB_NAME = 'KayitDefteriDB';
     const DB_VERSION = 1;
     
-    // Giriş bilgileri (basit auth - şifre hash'li)
-    const USERS = {
-      'bilge': '21232f297a57a5a743894a0e4a801fc3' // admin: admin (MD5)
-    };
+    // KULLANICILAR (localStorage'da saklanacak)
+    // Varsayılan: admin/admin
+    let users = [];
     
     let db;
     let customers = [];
@@ -330,8 +353,24 @@
     let isOnline = navigator.onLine;
     let currentUser = null;
     
-    // ==================== GİRİŞ / ÇIKIŞ ====================
+    // ==================== KULLANICI YÖNETİMİ ====================
+    function loadUsers() {
+      const saved = localStorage.getItem('kayitdefteri_users');
+      if (saved) {
+        users = JSON.parse(saved);
+      } else {
+        // Varsayılan kullanıcı
+        users = [{ username: 'admin', password: 'admin', role: 'admin' }];
+        saveUsers();
+      }
+    }
+    
+    function saveUsers() {
+      localStorage.setItem('kayitdefteri_users', JSON.stringify(users));
+    }
+    
     function checkLogin() {
+      loadUsers();
       const savedUser = localStorage.getItem('kayitdefteri_user');
       if (savedUser) {
         currentUser = savedUser;
@@ -352,19 +391,14 @@
       init();
     }
     
-    function md5(string) {
-      // Basit MD5 (gerçek uygulamada crypto-js kullanılmalı)
-      // Şimdilik basit kontrol - admin/admin
-      return string; 
-    }
-    
     function login(event) {
       event.preventDefault();
       const username = document.getElementById('loginUsername').value;
       const password = document.getElementById('loginPassword').value;
       
-      // Basit kontrol: admin / admin
-      if (username === 'bilge' && password === 'Bilge.') {
+      const user = users.find(u => u.username === username && u.password === password);
+      
+      if (user) {
         currentUser = username;
         localStorage.setItem('kayitdefteri_user', username);
         document.getElementById('loginError').classList.remove('show');
@@ -380,6 +414,155 @@
         localStorage.removeItem('kayitdefteri_user');
         showLogin();
       }
+    }
+    
+    // ==================== AYARLAR PANELİ ====================
+    function showSettings() {
+      const modal = document.getElementById('modal');
+      const content = document.getElementById('modalContent');
+      
+      const currentUserObj = users.find(u => u.username === currentUser);
+      const isAdmin = currentUserObj && currentUserObj.role === 'admin';
+      
+      let html = `
+        <div class="card-header">
+          <h2>⚙️ Ayarlar</h2>
+          <button class="btn btn-danger" onclick="closeModal()">✕</button>
+        </div>
+        
+        <div class="card">
+          <h3 style="margin-bottom: 1rem;">🔑 Şifre Değiştir</h3>
+          <form onsubmit="changePassword(event)">
+            <div class="form-group">
+              <label>Mevcut Şifre</label>
+              <input type="password" id="currentPassword" required>
+            </div>
+            <div class="form-group">
+              <label>Yeni Şifre</label>
+              <input type="password" id="newPassword" required minlength="3">
+            </div>
+            <div class="form-group">
+              <label>Yeni Şifre (Tekrar)</label>
+              <input type="password" id="confirmPassword" required minlength="3">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Şifreyi Değiştir</button>
+          </form>
+          <p id="passwordMessage" style="margin-top: 0.5rem; text-align: center;"></p>
+        </div>`;
+      
+      // Sadece admin kullanıcı yönetimini görebilir
+      if (isAdmin) {
+        html += `
+          <div class="card" style="margin-top: 1rem;">
+            <h3 style="margin-bottom: 1rem;">👥 Kullanıcı Yönetimi</h3>
+            
+            <h4 style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">Mevcut Kullanıcılar</h4>
+            <div style="margin-bottom: 1rem;">`;
+        
+        users.forEach(u => {
+          html += `
+            <div class="user-list-item">
+              <span>${u.username} ${u.role === 'admin' ? '(Admin)' : ''}</span>
+              ${u.username !== 'admin' ? `<button class="btn btn-danger btn-small" onclick="deleteUser('${u.username}')">Sil</button>` : '<span style="color: #6b7280; font-size: 0.8rem;">Sabit</span>'}
+            </div>`;
+        });
+        
+        html += `
+            </div>
+            
+            <h4 style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">Yeni Kullanıcı Ekle</h4>
+            <form onsubmit="addUser(event)">
+              <div class="form-group">
+                <label>Kullanıcı Adı</label>
+                <input type="text" id="newUsername" required>
+              </div>
+              <div class="form-group">
+                <label>Şifre</label>
+                <input type="password" id="newUserPassword" required minlength="3">
+              </div>
+              <div class="form-group">
+                <label>Rol</label>
+                <select id="newUserRole">
+                  <option value="user">Kullanıcı</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-success btn-block">Kullanıcı Ekle</button>
+            </form>
+            <p id="userMessage" style="margin-top: 0.5rem; text-align: center;"></p>
+          </div>`;
+      }
+      
+      content.innerHTML = html;
+      modal.classList.add('active');
+    }
+    
+    function changePassword(event) {
+      event.preventDefault();
+      const current = document.getElementById('currentPassword').value;
+      const newPass = document.getElementById('newPassword').value;
+      const confirm = document.getElementById('confirmPassword').value;
+      const msgEl = document.getElementById('passwordMessage');
+      
+      const user = users.find(u => u.username === currentUser);
+      
+      if (user.password !== current) {
+        msgEl.textContent = '❌ Mevcut şifre hatalı!';
+        msgEl.style.color = '#ef4444';
+        return;
+      }
+      
+      if (newPass !== confirm) {
+        msgEl.textContent = '❌ Yeni şifreler eşleşmiyor!';
+        msgEl.style.color = '#ef4444';
+        return;
+      }
+      
+      user.password = newPass;
+      saveUsers();
+      
+      msgEl.textContent = '✅ Şifre başarıyla değiştirildi!';
+      msgEl.style.color = '#10b981';
+      
+      document.getElementById('currentPassword').value = '';
+      document.getElementById('newPassword').value = '';
+      document.getElementById('confirmPassword').value = '';
+    }
+    
+    function addUser(event) {
+      event.preventDefault();
+      const username = document.getElementById('newUsername').value.trim();
+      const password = document.getElementById('newUserPassword').value;
+      const role = document.getElementById('newUserRole').value;
+      const msgEl = document.getElementById('userMessage');
+      
+      if (users.find(u => u.username === username)) {
+        msgEl.textContent = '❌ Bu kullanıcı adı zaten var!';
+        msgEl.style.color = '#ef4444';
+        return;
+      }
+      
+      users.push({ username, password, role });
+      saveUsers();
+      
+      msgEl.textContent = '✅ Kullanıcı eklendi!';
+      msgEl.style.color = '#10b981';
+      
+      document.getElementById('newUsername').value = '';
+      document.getElementById('newUserPassword').value = '';
+      
+      // Listeyi yenile
+      setTimeout(() => showSettings(), 500);
+    }
+    
+    function deleteUser(username) {
+      if (!confirm(`'${username}' kullanıcısını silmek istediğinize emin misiniz?`)) return;
+      
+      users = users.filter(u => u.username !== username);
+      saveUsers();
+      
+      showToast('Kullanıcı silindi');
+      showSettings();
     }
     
     // ==================== INDEXEDDB ====================
@@ -485,99 +668,84 @@
     
     // ==================== SENKRONİZASYON ====================
     async function syncData() {
-  if (!isOnline) return;
-  
-  try {
-    // 1. YEREL VERİLERİ AL
-    const localCustomers = await dbGetAll('customers');
-    const localTransactions = await dbGetAll('transactions');
-    const unsyncedTrans = localTransactions.filter(t => !t.synced);
-    
-    // 2. SUNUCUYA GÖNDER (sadece senkronize olmamışlar)
-    if (unsyncedTrans.length > 0 || localCustomers.length > 0) {
-      const result = await apiCall('/sync', {
-        method: 'POST',
-        body: JSON.stringify({
-          customers: localCustomers,
-          transactions: unsyncedTrans
-        })
-      });
+      if (!isOnline) return;
       
-      // 3. SUNUCUDAN GELEN VERİLERİ İŞLE (EZME YOK!)
-      // Müşterileri güncelle
-      for (const customer of result.customers) {
-        await dbPut('customers', customer);
-      }
-      
-      // Hareketleri güncelle (sadece yeni olanları ekle)
-      const currentLocalTrans = await dbGetAll('transactions');
-      
-      for (const trans of result.transactions) {
-        const exists = currentLocalTrans.find(t => t.id === trans.id);
-        if (!exists) {
-          await dbPut('transactions', { ...trans, synced: true });
+      try {
+        const localCustomers = await dbGetAll('customers');
+        const localTransactions = await dbGetAll('transactions');
+        const unsyncedTrans = localTransactions.filter(t => !t.synced);
+        
+        if (unsyncedTrans.length > 0 || localCustomers.length > 0) {
+          const result = await apiCall('/sync', {
+            method: 'POST',
+            body: JSON.stringify({
+              customers: localCustomers,
+              transactions: unsyncedTrans
+            })
+          });
+          
+          for (const customer of result.customers) {
+            await dbPut('customers', customer);
+          }
+          
+          const currentLocalTrans = await dbGetAll('transactions');
+          
+          for (const trans of result.transactions) {
+            const exists = currentLocalTrans.find(t => t.id === trans.id);
+            if (!exists) {
+              await dbPut('transactions', { ...trans, synced: true });
+            }
+          }
+          
+          for (const t of unsyncedTrans) {
+            const updated = { ...t, synced: true };
+            await dbPut('transactions', updated);
+          }
+          
+          showToast('☁️ Senkronizasyon tamamlandı');
+          await loadData();
         }
+      } catch (error) {
+        console.error('Senkronizasyon hatası:', error);
+        showToast('⚠️ Senkronizasyon başarısız');
       }
-      
-      // Senkronize olanları işaretle
-      for (const t of unsyncedTrans) {
-        const updated = { ...t, synced: true };
-        await dbPut('transactions', updated);
-      }
-      
-      showToast('☁️ Senkronizasyon tamamlandı');
-      
-      // Verileri yeniden yükle
-      await loadData();
     }
-  } catch (error) {
-    console.error('Senkronizasyon hatası:', error);
-    showToast('⚠️ Senkronizasyon başarısız');
-  }
-}
     
     // ==================== VERİ YÜKLEME ====================
-   async function loadData() {
-  if (isOnline) {
-    try {
-      // Önce sunucudan çek
-      const serverCustomers = await apiCall('/customers');
-      const serverTransactions = await apiCall('/transactions').catch(() => []);
-      
-      // Sunucu verilerini yerel DB'ye kaydet (EZME YOK, BİRLEŞTİR)
-      for (const c of serverCustomers) {
-        await dbPut('customers', c);
-      }
-      
-      // HAREKETLER: Sunucudakileri ekle, yereldekileri koru
-      const localTransactions = await dbGetAll('transactions');
-      
-      for (const t of serverTransactions) {
-        // Eğer bu hareket yerelde yoksa ekle
-        const exists = localTransactions.find(lt => lt.id === t.id);
-        if (!exists) {
-          await dbPut('transactions', { ...t, synced: true });
+    async function loadData() {
+      if (isOnline) {
+        try {
+          const serverCustomers = await apiCall('/customers');
+          const serverTransactions = await apiCall('/transactions').catch(() => []);
+          
+          for (const c of serverCustomers) {
+            await dbPut('customers', c);
+          }
+          
+          const localTransactions = await dbGetAll('transactions');
+          
+          for (const t of serverTransactions) {
+            const exists = localTransactions.find(lt => lt.id === t.id);
+            if (!exists) {
+              await dbPut('transactions', { ...t, synced: true });
+            }
+          }
+          
+          customers = await dbGetAll('customers');
+          transactions = await dbGetAll('transactions');
+          
+        } catch (error) {
+          console.log('Sunucu hatası, yerel veriler kullanılıyor:', error);
+          customers = await dbGetAll('customers');
+          transactions = await dbGetAll('transactions');
         }
+      } else {
+        customers = await dbGetAll('customers');
+        transactions = await dbGetAll('transactions');
       }
       
-      // Tüm verileri (yerel + sunucu) birleştir
-      customers = await dbGetAll('customers');
-      transactions = await dbGetAll('transactions');
-      
-    } catch (error) {
-      // Sunucu hatası - yerel verileri kullan
-      console.log('Sunucu hatası, yerel veriler kullanılıyor:', error);
-      customers = await dbGetAll('customers');
-      transactions = await dbGetAll('transactions');
+      renderPage();
     }
-  } else {
-    // Offline - yerel veriler
-    customers = await dbGetAll('customers');
-    transactions = await dbGetAll('transactions');
-  }
-  
-  renderPage();
-}
     
     // ==================== SAYFA RENDER ====================
     function renderPage() {
@@ -638,7 +806,7 @@
       });
     }
     
-    // ==================== MÜŞTERİ DETAY (DÜZENLE + SİL EKLENDİ) ====================
+    // ==================== MÜŞTERİ DETAY ====================
     async function showCustomerDetail(customerId) {
       const customer = customers.find(c => c.id === customerId);
       const customerTransactions = transactions.filter(t => t.customer_id === customerId)
@@ -655,7 +823,6 @@
           <button class="btn btn-danger" onclick="closeModal()">✕</button>
         </div>
         
-        <!-- DÜZENLE & SİL BUTONLARI -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;">
           <button class="btn btn-warning" onclick="showEditCustomerForm('${customerId}')">✏️ Düzenle</button>
           <button class="btn btn-danger" onclick="deleteCustomer('${customerId}')">🗑️ Sil</button>
@@ -706,7 +873,7 @@
       modal.classList.add('active');
     }
     
-    // ==================== MÜŞTERİ DÜZENLEME (YENİ) ====================
+    // ==================== MÜŞTERİ DÜZENLEME ====================
     function showEditCustomerForm(customerId) {
       const customer = customers.find(c => c.id === customerId);
       const content = document.getElementById('modalContent');
@@ -752,9 +919,15 @@
       
       if (isOnline) {
         try {
-          await apiCall('/customers', {
+          await apiCall('/customers/' + customerId, {
             method: 'PUT',
-            body: JSON.stringify(customer)
+            body: JSON.stringify({
+              name: customer.name,
+              phone: customer.phone,
+              address: customer.address,
+              tax_number: customer.tax_number,
+              balance: customer.balance
+            })
           });
         } catch (e) {
           console.log('Sunucu güncellemesi beklemeye alındı');
@@ -766,7 +939,7 @@
       renderPage();
     }
     
-    // ==================== MÜŞTERİ SİLME (YENİ) ====================
+    // ==================== MÜŞTERİ SİLME ====================
     async function deleteCustomer(customerId) {
       if (!confirm('Bu müşteriyi ve tüm hareketlerini silmek istediğinize emin misiniz?')) return;
       
@@ -781,7 +954,7 @@
       
       if (isOnline) {
         try {
-          await apiCall(`/customers/${customerId}`, { method: 'DELETE' });
+          await apiCall('/customers/' + customerId, { method: 'DELETE' });
         } catch (e) {
           console.log('Sunucu silme beklemeye alındı');
         }
@@ -994,7 +1167,7 @@
           <div class="amount" style="font-size: 1.75rem; color: ${netBalance >= 0 ? '#ef4444' : '#10b981'};">
             ₺${Math.abs(netBalance).toFixed(2)}
           </div>
-          <p style="color: #6b7280; margin-top: 0.5rem;">${netBalance >= 0 ? ' ' : 'Alacaklısınız'}</p>
+          <p style="color: #6b7280; margin-top: 0.5rem;">${netBalance >= 0 ? 'Borçlusunuz' : 'Alacaklısınız'}</p>
         </div>
         
         <h3 style="margin-bottom: 0.75rem;">🔴 Borçlu Müşteriler</h3>`;
@@ -1020,40 +1193,4 @@
           html += `
             <div class="customer-item" onclick="showCustomerDetail('${c.id}')">
               <div class="customer-info"><h3>${c.name}</h3></div>
-              <div class="balance negative">-₺${Math.abs(parseFloat(c.balance)).toFixed(2)}</div>
-            </div>`;
-        });
-      }
-      
-      container.innerHTML = html;
-    }
-    
-    // ==================== YARDIMCI ====================
-    function closeModal() {
-      document.getElementById('modal').classList.remove('active');
-      renderPage();
-    }
-    
-    function showToast(message) {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-    
-    document.getElementById('modal').addEventListener('click', (e) => {
-      if (e.target.id === 'modal') closeModal();
-    });
-    
-    // ==================== BAŞLATMA ====================
-    async function init() {
-      await initDB();
-      updateOnlineStatus();
-      await loadData();
-    }
-    
-    // Sayfa yüklendiğinde giriş kontrolü
-    checkLogin();
-  </script>
-</body>
-</html>
+              <div class="balance negative">-₺${Math.abs(parseFloat
