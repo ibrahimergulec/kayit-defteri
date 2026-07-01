@@ -485,62 +485,99 @@
     
     // ==================== SENKRONİZASYON ====================
     async function syncData() {
-      if (!isOnline) return;
+  if (!isOnline) return;
+  
+  try {
+    // 1. YEREL VERİLERİ AL
+    const localCustomers = await dbGetAll('customers');
+    const localTransactions = await dbGetAll('transactions');
+    const unsyncedTrans = localTransactions.filter(t => !t.synced);
+    
+    // 2. SUNUCUYA GÖNDER (sadece senkronize olmamışlar)
+    if (unsyncedTrans.length > 0 || localCustomers.length > 0) {
+      const result = await apiCall('/sync', {
+        method: 'POST',
+        body: JSON.stringify({
+          customers: localCustomers,
+          transactions: unsyncedTrans
+        })
+      });
       
-      try {
-        const localCustomers = await dbGetAll('customers');
-        const localTransactions = await dbGetAll('transactions');
-        const unsynced = localTransactions.filter(t => !t.synced);
-        
-        if (unsynced.length > 0 || localCustomers.length > 0) {
-          const result = await apiCall('/sync', {
-            method: 'POST',
-            body: JSON.stringify({
-              customers: localCustomers,
-              transactions: unsynced
-            })
-          });
-          
-          for (const customer of result.customers) {
-            await dbPut('customers', customer);
-          }
-          for (const trans of result.transactions) {
-            await dbPut('transactions', { ...trans, synced: true });
-          }
-          
-          showToast('☁️ Senkronizasyon tamamlandı');
-          loadData();
-        }
-      } catch (error) {
-        showToast('⚠️ Senkronizasyon başarısız');
+      // 3. SUNUCUDAN GELEN VERİLERİ İŞLE (EZME YOK!)
+      // Müşterileri güncelle
+      for (const customer of result.customers) {
+        await dbPut('customers', customer);
       }
+      
+      // Hareketleri güncelle (sadece yeni olanları ekle)
+      const currentLocalTrans = await dbGetAll('transactions');
+      
+      for (const trans of result.transactions) {
+        const exists = currentLocalTrans.find(t => t.id === trans.id);
+        if (!exists) {
+          await dbPut('transactions', { ...trans, synced: true });
+        }
+      }
+      
+      // Senkronize olanları işaretle
+      for (const t of unsyncedTrans) {
+        const updated = { ...t, synced: true };
+        await dbPut('transactions', updated);
+      }
+      
+      showToast('☁️ Senkronizasyon tamamlandı');
+      
+      // Verileri yeniden yükle
+      await loadData();
     }
+  } catch (error) {
+    console.error('Senkronizasyon hatası:', error);
+    showToast('⚠️ Senkronizasyon başarısız');
+  }
+}
     
     // ==================== VERİ YÜKLEME ====================
-    async function loadData() {
-      if (isOnline) {
-        try {
-          const [serverCustomers, serverTransactions] = await Promise.all([
-            apiCall('/customers'),
-            apiCall('/transactions/all').catch(() => [])
-          ]);
-          
-          for (const c of serverCustomers) await dbPut('customers', c);
-          for (const t of serverTransactions) await dbPut('transactions', { ...t, synced: true });
-          
-          customers = serverCustomers;
-          transactions = serverTransactions;
-        } catch (error) {
-          customers = await dbGetAll('customers');
-          transactions = await dbGetAll('transactions');
-        }
-      } else {
-        customers = await dbGetAll('customers');
-        transactions = await dbGetAll('transactions');
+   async function loadData() {
+  if (isOnline) {
+    try {
+      // Önce sunucudan çek
+      const serverCustomers = await apiCall('/customers');
+      const serverTransactions = await apiCall('/transactions').catch(() => []);
+      
+      // Sunucu verilerini yerel DB'ye kaydet (EZME YOK, BİRLEŞTİR)
+      for (const c of serverCustomers) {
+        await dbPut('customers', c);
       }
       
-      renderPage();
+      // HAREKETLER: Sunucudakileri ekle, yereldekileri koru
+      const localTransactions = await dbGetAll('transactions');
+      
+      for (const t of serverTransactions) {
+        // Eğer bu hareket yerelde yoksa ekle
+        const exists = localTransactions.find(lt => lt.id === t.id);
+        if (!exists) {
+          await dbPut('transactions', { ...t, synced: true });
+        }
+      }
+      
+      // Tüm verileri (yerel + sunucu) birleştir
+      customers = await dbGetAll('customers');
+      transactions = await dbGetAll('transactions');
+      
+    } catch (error) {
+      // Sunucu hatası - yerel verileri kullan
+      console.log('Sunucu hatası, yerel veriler kullanılıyor:', error);
+      customers = await dbGetAll('customers');
+      transactions = await dbGetAll('transactions');
     }
+  } else {
+    // Offline - yerel veriler
+    customers = await dbGetAll('customers');
+    transactions = await dbGetAll('transactions');
+  }
+  
+  renderPage();
+}
     
     // ==================== SAYFA RENDER ====================
     function renderPage() {
