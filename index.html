@@ -270,7 +270,7 @@
     }
     .login-error.show { display: block; }
     
-    /* AYARLAR PANELİ */
+    /* AYARLAR */
     .settings-btn {
       background: none;
       border: none;
@@ -297,7 +297,7 @@
     <div class="login-box">
       <h2>📘 Kayıt Defteri</h2>
       <p style="text-align: center; color: #6b7280; margin-bottom: 1.5rem;">Giriş yapın</p>
-      <form onsubmit="login(event)">
+      <form onsubmit="return login(event)">
         <div class="form-group">
           <input type="text" id="loginUsername" placeholder="Kullanıcı adı" required>
         </div>
@@ -306,7 +306,7 @@
         </div>
         <button type="submit" class="btn btn-primary">Giriş Yap</button>
       </form>
-      <p class="login-error" id="loginError">Kullanıcı adı veya şifre hatalı!</p>
+      <p class="login-error" id="loginError">❌ Kullanıcı adı veya şifre hatalı!</p>
     </div>
   </div>
 
@@ -314,7 +314,7 @@
   <div id="appScreen" class="hidden">
     <div class="header">
       <h1>📘 Kayıt Defteri</h1>
-      <span class="status-badge" id="statusBadge">Bağlantı kontrol ediliyor...</span>
+      <span class="status-badge" id="statusBadge">Kontrol ediliyor...</span>
       <button class="settings-btn" onclick="showSettings()" title="Ayarlar">⚙️</button>
       <button class="settings-btn" onclick="logout()" title="Çıkış">🚪</button>
     </div>
@@ -337,15 +337,12 @@
   </div>
 
   <script>
-    // ==================== KONFİGÜRASYON ====================
+    // ==================== AYARLAR ====================
     const API_URL = window.location.origin + '/api';
     const DB_NAME = 'KayitDefteriDB';
     const DB_VERSION = 1;
     
-    // KULLANICILAR (localStorage'da saklanacak)
-    // Varsayılan: admin/admin
     let users = [];
-    
     let db;
     let customers = [];
     let transactions = [];
@@ -354,13 +351,19 @@
     let currentUser = null;
     
     // ==================== KULLANICI YÖNETİMİ ====================
-    function loadUsers() {
+    function initUsers() {
       const saved = localStorage.getItem('kayitdefteri_users');
       if (saved) {
-        users = JSON.parse(saved);
-      } else {
-        // Varsayılan kullanıcı
-        users = [{ username: 'admin', password: 'admin', role: 'admin' }];
+        try {
+          users = JSON.parse(saved);
+        } catch (e) {
+          users = [];
+        }
+      }
+      
+      // Varsayılan admin yoksa oluştur
+      if (!users.find(u => u.username === 'admin')) {
+        users.push({ username: 'admin', password: 'admin', role: 'admin' });
         saveUsers();
       }
     }
@@ -370,28 +373,16 @@
     }
     
     function checkLogin() {
-  // Kullanıcıları yükle veya varsayılan oluştur
-  try {
-    const saved = localStorage.getItem('kayitdefteri_users');
-    if (saved) {
-      users = JSON.parse(saved);
-    } else {
-      users = [{ username: 'admin', password: 'admin', role: 'admin' }];
-      localStorage.setItem('kayitdefteri_users', JSON.stringify(users));
+      initUsers();
+      
+      const savedUser = localStorage.getItem('kayitdefteri_user');
+      if (savedUser && users.find(u => u.username === savedUser)) {
+        currentUser = savedUser;
+        showApp();
+      } else {
+        showLogin();
+      }
     }
-  } catch (e) {
-    users = [{ username: 'admin', password: 'admin', role: 'admin' }];
-    localStorage.setItem('kayitdefteri_users', JSON.stringify(users));
-  }
-  
-  const savedUser = localStorage.getItem('kayitdefteri_user');
-  if (savedUser) {
-    currentUser = savedUser;
-    showApp();
-  } else {
-    showLogin();
-  }
-}
     
     function showLogin() {
       document.getElementById('loginScreen').classList.remove('hidden');
@@ -405,56 +396,26 @@
     }
     
     function login(event) {
-  event.preventDefault();
-  
-  const username = document.getElementById('loginUsername').value.trim();
-  const password = document.getElementById('loginPassword').value;
-  
-  // HER ZAMAN admin KABUL ET (test için)
-  if (username === 'admin' && password === 'admin') {
-    currentUser = 'admin';
-    localStorage.setItem('kayitdefteri_user', 'admin');
-    showApp();
-    return;
-  }
-  
-  // Hata göster
-  const errorEl = document.getElementById('loginError');
-  if (errorEl) {
-    errorEl.textContent = '❌ Hatalı giriş!';
-    errorEl.style.display = 'block';
-    errorEl.style.color = 'red';
-  }
-}
-  // Eğer users boşsa, varsayılan oluştur
-  if (!users || users.length === 0) {
-    users = [{ username: 'admin', password: 'admin', role: 'admin' }];
-    saveUsers();
-    console.log('Varsayılan kullanıcı oluşturuldu');
-  }
-  
-  const user = users.find(u => u.username === username && u.password === password);
-  
-  console.log('Bulunan kullanıcı:', user);
-  
-  if (user) {
-    currentUser = username;
-    localStorage.setItem('kayitdefteri_user', username);
-    
-    const errorEl = document.getElementById('loginError');
-    if (errorEl) errorEl.classList.remove('show');
-    
-    showApp();
-  } else {
-    const errorEl = document.getElementById('loginError');
-    if (errorEl) {
-      errorEl.textContent = 'Kullanıcı adı veya şifre hatalı!';
-      errorEl.classList.add('show');
-    } else {
-      alert('Kullanıcı adı veya şifre hatalı!');
+      event.preventDefault();
+      
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      
+      initUsers(); // Kullanıcıları yükle
+      
+      const user = users.find(u => u.username === username && u.password === password);
+      
+      if (user) {
+        currentUser = username;
+        localStorage.setItem('kayitdefteri_user', username);
+        document.getElementById('loginError').classList.remove('show');
+        showApp();
+      } else {
+        document.getElementById('loginError').classList.add('show');
+      }
+      
+      return false;
     }
-  }
-}
     
     function logout() {
       if (confirm('Çıkış yapmak istediğinize emin misiniz?')) {
@@ -498,7 +459,6 @@
           <p id="passwordMessage" style="margin-top: 0.5rem; text-align: center;"></p>
         </div>`;
       
-      // Sadece admin kullanıcı yönetimini görebilir
       if (isAdmin) {
         html += `
           <div class="card" style="margin-top: 1rem;">
@@ -511,7 +471,9 @@
           html += `
             <div class="user-list-item">
               <span>${u.username} ${u.role === 'admin' ? '(Admin)' : ''}</span>
-              ${u.username !== 'admin' ? `<button class="btn btn-danger btn-small" onclick="deleteUser('${u.username}')">Sil</button>` : '<span style="color: #6b7280; font-size: 0.8rem;">Sabit</span>'}
+              ${u.username !== 'admin' 
+                ? `<button class="btn btn-danger btn-small" onclick="deleteUser('${u.username}')">Sil</button>` 
+                : '<span style="color: #6b7280; font-size: 0.8rem;">Sabit</span>'}
             </div>`;
         });
         
@@ -547,6 +509,7 @@
     
     function changePassword(event) {
       event.preventDefault();
+      
       const current = document.getElementById('currentPassword').value;
       const newPass = document.getElementById('newPassword').value;
       const confirm = document.getElementById('confirmPassword').value;
@@ -579,6 +542,7 @@
     
     function addUser(event) {
       event.preventDefault();
+      
       const username = document.getElementById('newUsername').value.trim();
       const password = document.getElementById('newUserPassword').value;
       const role = document.getElementById('newUserRole').value;
@@ -599,7 +563,6 @@
       document.getElementById('newUsername').value = '';
       document.getElementById('newUserPassword').value = '';
       
-      // Listeyi yenile
       setTimeout(() => showSettings(), 500);
     }
     
@@ -1241,4 +1204,40 @@
           html += `
             <div class="customer-item" onclick="showCustomerDetail('${c.id}')">
               <div class="customer-info"><h3>${c.name}</h3></div>
-              <div class="balance negative">-₺${Math.abs(parseFloat
+              <div class="balance negative">-₺${Math.abs(parseFloat(c.balance)).toFixed(2)}</div>
+            </div>`;
+        });
+      }
+      
+      container.innerHTML = html;
+    }
+    
+    // ==================== YARDIMCI ====================
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+      renderPage();
+    }
+    
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+    
+    document.getElementById('modal').addEventListener('click', (e) => {
+      if (e.target.id === 'modal') closeModal();
+    });
+    
+    // ==================== BAŞLATMA ====================
+    async function init() {
+      await initDB();
+      updateOnlineStatus();
+      await loadData();
+    }
+    
+    // Sayfa yüklendiğinde
+    checkLogin();
+  </script>
+</body>
+</html>
