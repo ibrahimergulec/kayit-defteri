@@ -8,76 +8,19 @@
   <link rel="manifest" href="manifest.json">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f3f4f6; 
-      color: #1f2937;
-    }
-    
-    .header {
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
-      color: white;
-      padding: 1rem;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f3f4f6; color: #1f2937; }
+    .header { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; padding: 1rem; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 0.5rem; }
     .header h1 { font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem; flex: 1; }
-    .status-badge {
-      font-size: 0.7rem;
-      padding: 0.2rem 0.5rem;
-      border-radius: 20px;
-      background: rgba(255,255,255,0.2);
-    }
+    .status-badge { font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 20px; background: rgba(255,255,255,0.2); }
     .status-badge.online { background: #10b981; }
     .status-badge.offline { background: #ef4444; }
-    
-    .nav {
-      display: flex;
-      background: white;
-      border-bottom: 1px solid #e5e7eb;
-      overflow-x: auto;
-    }
-    .nav-btn {
-      flex: 1;
-      padding: 1rem;
-      border: none;
-      background: none;
-      color: #6b7280;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-    }
+    .nav { display: flex; background: white; border-bottom: 1px solid #e5e7eb; overflow-x: auto; }
+    .nav-btn { flex: 1; padding: 1rem; border: none; background: none; color: #6b7280; font-weight: 600; cursor: pointer; white-space: nowrap; }
     .nav-btn.active { color: #2563eb; border-bottom: 2px solid #2563eb; }
-    
     .content { padding: 1rem; max-width: 600px; margin: 0 auto; }
-    
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.75rem;
-    }
-    
-    .btn {
-      padding: 0.75rem 1.5rem;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
+    .card { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .btn-primary { background: #2563eb; color: white; }
     .btn-success { background: #10b981; color: white; }
     .btn-danger { background: #ef4444; color: white; }
@@ -85,230 +28,62 @@
     .btn-gray { background: #6b7280; color: white; }
     .btn-block { width: 100%; margin-top: 0.5rem; }
     .btn-small { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
-    
     .form-group { margin-bottom: 1rem; }
-    .form-group label {
-      display: block;
-      margin-bottom: 0.25rem;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #374151;
-    }
-    .form-group input, .form-group select {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      font-size: 1rem;
-    }
-    
-    .customer-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem;
-      border-bottom: 1px solid #f3f4f6;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
+    .form-group label { display: block; margin-bottom: 0.25rem; font-size: 0.875rem; font-weight: 500; color: #374151; }
+    .form-group input, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 1rem; }
+    .customer-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #f3f4f6; cursor: pointer; transition: background 0.2s; }
     .customer-item:hover { background: #f9fafb; }
     .customer-info h3 { font-size: 1rem; color: #111827; }
     .customer-info p { font-size: 0.875rem; color: #6b7280; }
-    .balance {
-      font-weight: 700;
-      font-size: 1.1rem;
-    }
+    .balance { font-weight: 700; font-size: 1.1rem; }
     .balance.positive { color: #ef4444; }
     .balance.negative { color: #10b981; }
     .balance.zero { color: #6b7280; }
-    
-    .transaction-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.75rem;
-      border-bottom: 1px solid #f3f4f6;
-    }
-    .transaction-type {
-      display: inline-block;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
+    .transaction-item { display: flex; justify-content: space-between; padding: 0.75rem; border-bottom: 1px solid #f3f4f6; }
+    .transaction-type { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
     .type-debt { background: #fee2e2; color: #991b1b; }
     .type-payment { background: #d1fae5; color: #065f46; }
-    
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 200;
-      justify-content: center;
-      align-items: flex-end;
-    }
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; justify-content: center; align-items: flex-end; }
     .modal.active { display: flex; }
-    .modal-content {
-      background: white;
-      width: 100%;
-      max-width: 500px;
-      max-height: 90vh;
-      border-radius: 20px 20px 0 0;
-      padding: 1.5rem;
-      overflow-y: auto;
-      animation: slideUp 0.3s ease;
-    }
-    @keyframes slideUp {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
-    }
-    
-    .summary-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
-      margin-bottom: 1rem;
-    }
-    .summary-card {
-      background: white;
-      padding: 1rem;
-      border-radius: 12px;
-      text-align: center;
-    }
+    .modal-content { background: white; width: 100%; max-width: 500px; max-height: 90vh; border-radius: 20px 20px 0 0; padding: 1.5rem; overflow-y: auto; animation: slideUp 0.3s ease; }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+    .summary-card { background: white; padding: 1rem; border-radius: 12px; text-align: center; }
     .summary-card h4 { font-size: 0.75rem; color: #6b7280; margin-bottom: 0.5rem; }
     .summary-card .amount { font-size: 1.25rem; font-weight: 700; }
-    
-    .search-box {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      font-size: 1rem;
-    }
-    
-    .toast {
-      position: fixed;
-      bottom: 80px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #1f2937;
-      color: white;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      z-index: 300;
-      display: none;
-    }
+    .search-box { width: 100%; padding: 0.75rem 1rem; border: 1px solid #d1d5db; border-radius: 8px; margin-bottom: 1rem; font-size: 1rem; }
+    .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #1f2937; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; z-index: 300; display: none; }
     .toast.show { display: block; animation: fadeIn 0.3s; }
     @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } }
-    
-    .install-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      background: #2563eb;
-      color: white;
-      border: none;
-      font-size: 1.5rem;
-      box-shadow: 0 4px 12px rgba(37,99,235,0.4);
-      cursor: pointer;
-      z-index: 150;
-    }
-    
-    .empty-state {
-      text-align: center;
-      padding: 3rem 1rem;
-      color: #6b7280;
-    }
-    
-    .login-container {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 2rem;
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    }
-    .login-box {
-      background: white;
-      padding: 2rem;
-      border-radius: 16px;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-    }
-    .login-box h2 {
-      text-align: center;
-      margin-bottom: 1.5rem;
-      color: #1f2937;
-    }
-    .login-box .form-group {
-      margin-bottom: 1rem;
-    }
-    .login-box input {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      font-size: 1rem;
-    }
-    .login-box .btn {
-      width: 100%;
-      margin-top: 1rem;
-    }
-    .login-error {
-      color: #ef4444;
-      font-size: 0.875rem;
-      text-align: center;
-      margin-top: 0.5rem;
-      display: none;
-    }
+    .install-btn { position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: #2563eb; color: white; border: none; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(37,99,235,0.4); cursor: pointer; z-index: 150; }
+    .empty-state { text-align: center; padding: 3rem 1rem; color: #6b7280; }
+    .login-container { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 2rem; background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+    .login-box { background: white; padding: 2rem; border-radius: 16px; width: 100%; max-width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+    .login-box h2 { text-align: center; margin-bottom: 1.5rem; color: #1f2937; }
+    .login-box .form-group { margin-bottom: 1rem; }
+    .login-box input { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 1rem; }
+    .login-box .btn { width: 100%; margin-top: 1rem; }
+    .login-error { color: #ef4444; font-size: 0.875rem; text-align: center; margin-top: 0.5rem; display: none; }
     .login-error.show { display: block; }
-    
-    .settings-btn {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 1.2rem;
-      cursor: pointer;
-      padding: 0.25rem;
-    }
-    
-    .user-list-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.75rem;
-      border-bottom: 1px solid #e5e7eb;
-    }
-    
+    .settings-btn { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; padding: 0.25rem; }
+    .user-list-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-bottom: 1px solid #e5e7eb; }
     .hidden { display: none !important; }
   </style>
 </head>
 <body>
-  <!-- GİRİŞ EKRANI -->
   <div id="loginScreen" class="login-container">
     <div class="login-box">
       <h2>📘 Kayıt Defteri</h2>
       <p style="text-align: center; color: #6b7280; margin-bottom: 1.5rem;">Giriş yapın</p>
       <form onsubmit="return login(event)">
-        <div class="form-group">
-          <input type="text" id="loginUsername" placeholder="Kullanıcı adı" required autocomplete="username">
-        </div>
-        <div class="form-group">
-          <input type="password" id="loginPassword" placeholder="Şifre" required autocomplete="current-password">
-        </div>
+        <div class="form-group"><input type="text" id="loginUsername" placeholder="Kullanıcı adı" required autocomplete="username"></div>
+        <div class="form-group"><input type="password" id="loginPassword" placeholder="Şifre" required autocomplete="current-password"></div>
         <button type="submit" class="btn btn-primary">Giriş Yap</button>
       </form>
       <p class="login-error" id="loginError">❌ Kullanıcı adı veya şifre hatalı!</p>
     </div>
   </div>
 
-  <!-- ANA UYGULAMA -->
   <div id="appScreen" class="hidden">
     <div class="header">
       <h1>📘 Kayıt Defteri</h1>
@@ -316,33 +91,26 @@
       <button class="settings-btn" onclick="showSettings()" title="Ayarlar">⚙️</button>
       <button class="settings-btn" onclick="logout()" title="Çıkış">🚪</button>
     </div>
-    
     <div class="nav">
       <button class="nav-btn active" onclick="showPage('customers')">👥 Müşteriler</button>
       <button class="nav-btn" onclick="showPage('transactions')">📝 Hareketler</button>
       <button class="nav-btn" onclick="showPage('report')">📊 Rapor</button>
     </div>
-    
     <div class="content" id="content"></div>
-    
     <div class="toast" id="toast"></div>
-    
     <button class="install-btn" onclick="showAddModal()" title="Yeni Ekle">+</button>
-    
     <div class="modal" id="modal">
       <div class="modal-content" id="modalContent"></div>
     </div>
   </div>
 
   <script>
-    // ==================== KONSTANTLAR ====================
     const API_URL = window.location.origin + '/api';
     const DB_NAME = 'KayitDefteriDB';
     const DB_VERSION = 1;
     const LS_USERS_KEY = 'kayitdefteri_users_v2';
     const LS_CURRENT_USER_KEY = 'kayitdefteri_current_user';
     
-    // ==================== GLOBAL DEĞİŞKENLER ====================
     let users = [];
     let db = null;
     let customers = [];
@@ -353,49 +121,45 @@
     
     // ==================== KULLANICI YÖNETİMİ ====================
     
-    function loadUsers() {
-      try {
-        const saved = localStorage.getItem(LS_USERS_KEY);
-        if (saved) {
-          users = JSON.parse(saved);
-        } else {
-          users = [];
+    async function loadUsers() {
+      if (isOnline) {
+        try {
+          const serverUsers = await apiCall('/users');
+          users = serverUsers.map(u => ({ id: u.id, username: u.username, password: '', role: u.role }));
+          localStorage.setItem(LS_USERS_KEY, JSON.stringify(users));
+        } catch (e) {
+          loadUsersFromCache();
         }
-      } catch (e) {
-        console.error('Kullanıcı yükleme hatası:', e);
-        users = [];
-      }
-      
-      // Varsayılan admin kontrolü
-      const adminExists = users.some(u => u.username === 'admin');
-      if (!adminExists) {
-        users.push({ username: 'admin', password: 'admin', role: 'admin' });
-        saveUsers();
+      } else {
+        loadUsersFromCache();
       }
     }
     
-    function saveUsers() {
-      try {
-        localStorage.setItem(LS_USERS_KEY, JSON.stringify(users));
-      } catch (e) {
-        console.error('Kullanıcı kaydetme hatası:', e);
+    function loadUsersFromCache() {
+      const cached = localStorage.getItem(LS_USERS_KEY);
+      if (cached) {
+        users = JSON.parse(cached);
+      } else {
+        users = [];
       }
     }
     
     function checkLogin() {
-      loadUsers();
+      loadUsersFromCache();
       
-      const savedUser = localStorage.getItem(LS_CURRENT_USER_KEY);
-      if (savedUser) {
-        const userExists = users.some(u => u.username === savedUser);
-        if (userExists) {
-          currentUser = savedUser;
-          showApp();
-          return;
-        }
+      // Admin yoksa varsayılan oluştur (offline mod için)
+      if (!users.some(u => u.username === 'admin')) {
+        users = [{ id: 'local-admin', username: 'admin', password: 'admin', role: 'admin' }];
+        localStorage.setItem(LS_USERS_KEY, JSON.stringify(users));
       }
       
-      showLogin();
+      const savedUser = localStorage.getItem(LS_CURRENT_USER_KEY);
+      if (savedUser && users.some(u => u.username === savedUser)) {
+        currentUser = savedUser;
+        showApp();
+      } else {
+        showLogin();
+      }
     }
     
     function showLogin() {
@@ -409,13 +173,35 @@
       initApp();
     }
     
-    function login(event) {
+    async function login(event) {
       event.preventDefault();
       
       const username = document.getElementById('loginUsername').value.trim();
       const password = document.getElementById('loginPassword').value;
       
-      loadUsers();
+      // Önce sunucudan dene
+      if (isOnline) {
+        try {
+          const result = await apiCall('/login', {
+            method: 'POST',
+            body: JSON.stringify({ username, password })
+          });
+          
+          if (result.success) {
+            currentUser = username;
+            localStorage.setItem(LS_CURRENT_USER_KEY, username);
+            await loadUsers();
+            document.getElementById('loginError').classList.remove('show');
+            showApp();
+            return false;
+          }
+        } catch (e) {
+          console.log('Sunucu giriş başarısız, yerel deneniyor');
+        }
+      }
+      
+      // Yerel kontrol (offline veya sunucu hatası)
+      loadUsersFromCache();
       
       const user = users.find(u => u.username === username && u.password === password);
       
@@ -439,7 +225,7 @@
       }
     }
     
-    // ==================== AYARLAR PANELİ ====================
+    // ==================== AYARLAR ====================
     
     function showSettings() {
       const modal = document.getElementById('modal');
@@ -449,26 +235,13 @@
       const isAdmin = currentUserObj && currentUserObj.role === 'admin';
       
       let html = `
-        <div class="card-header">
-          <h2>⚙️ Ayarlar</h2>
-          <button class="btn btn-danger" onclick="closeModal()">✕</button>
-        </div>
-        
+        <div class="card-header"><h2>⚙️ Ayarlar</h2><button class="btn btn-danger" onclick="closeModal()">✕</button></div>
         <div class="card">
           <h3 style="margin-bottom: 1rem;">🔑 Şifre Değiştir</h3>
           <form onsubmit="return changePassword(event)">
-            <div class="form-group">
-              <label>Mevcut Şifre</label>
-              <input type="password" id="currentPassword" required>
-            </div>
-            <div class="form-group">
-              <label>Yeni Şifre</label>
-              <input type="password" id="newPassword" required minlength="3">
-            </div>
-            <div class="form-group">
-              <label>Yeni Şifre (Tekrar)</label>
-              <input type="password" id="confirmPassword" required minlength="3">
-            </div>
+            <div class="form-group"><label>Mevcut Şifre</label><input type="password" id="currentPassword" required></div>
+            <div class="form-group"><label>Yeni Şifre</label><input type="password" id="newPassword" required minlength="3"></div>
+            <div class="form-group"><label>Yeni Şifre (Tekrar)</label><input type="password" id="confirmPassword" required minlength="3"></div>
             <button type="submit" class="btn btn-primary btn-block">Şifreyi Değiştir</button>
           </form>
           <p id="passwordMessage" style="margin-top: 0.5rem; text-align: center;"></p>
@@ -478,7 +251,6 @@
         html += `
           <div class="card" style="margin-top: 1rem;">
             <h3 style="margin-bottom: 1rem;">👥 Kullanıcı Yönetimi</h3>
-            
             <h4 style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">Mevcut Kullanıcılar</h4>
             <div style="margin-bottom: 1rem;">`;
         
@@ -487,31 +259,18 @@
             <div class="user-list-item">
               <span>${u.username} ${u.role === 'admin' ? '(Admin)' : ''}</span>
               ${u.username !== 'admin' 
-                ? `<button class="btn btn-danger btn-small" onclick="deleteUser('${u.username}')">Sil</button>` 
+                ? `<button class="btn btn-danger btn-small" onclick="deleteUser('${u.id || u.username}')">Sil</button>` 
                 : '<span style="color: #6b7280; font-size: 0.8rem;">Sabit</span>'}
             </div>`;
         });
         
         html += `
             </div>
-            
             <h4 style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">Yeni Kullanıcı Ekle</h4>
             <form onsubmit="return addUser(event)">
-              <div class="form-group">
-                <label>Kullanıcı Adı</label>
-                <input type="text" id="newUsername" required>
-              </div>
-              <div class="form-group">
-                <label>Şifre</label>
-                <input type="password" id="newUserPassword" required minlength="3">
-              </div>
-              <div class="form-group">
-                <label>Rol</label>
-                <select id="newUserRole">
-                  <option value="user">Kullanıcı</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
+              <div class="form-group"><label>Kullanıcı Adı</label><input type="text" id="newUsername" required></div>
+              <div class="form-group"><label>Şifre</label><input type="password" id="newUserPassword" required minlength="3"></div>
+              <div class="form-group"><label>Rol</label><select id="newUserRole"><option value="user">Kullanıcı</option><option value="admin">Admin</option></select></div>
               <button type="submit" class="btn btn-success btn-block">Kullanıcı Ekle</button>
             </form>
             <p id="userMessage" style="margin-top: 0.5rem; text-align: center;"></p>
@@ -522,7 +281,7 @@
       modal.classList.add('active');
     }
     
-    function changePassword(event) {
+    async function changePassword(event) {
       event.preventDefault();
       
       const current = document.getElementById('currentPassword').value;
@@ -530,24 +289,30 @@
       const confirm = document.getElementById('confirmPassword').value;
       const msgEl = document.getElementById('passwordMessage');
       
-      loadUsers();
-      
-      const user = users.find(u => u.username === currentUser);
-      
-      if (!user || user.password !== current) {
-        msgEl.textContent = '❌ Mevcut şifre hatalı!';
-        msgEl.style.color = '#ef4444';
-        return false;
-      }
-      
       if (newPass !== confirm) {
         msgEl.textContent = '❌ Yeni şifreler eşleşmiyor!';
         msgEl.style.color = '#ef4444';
         return false;
       }
       
+      if (isOnline) {
+        try {
+          // Sunucuda şifre değiştir (eğer API varsa)
+          // Şimdilik sadece yerel değiştir
+        } catch (e) {}
+      }
+      
+      loadUsersFromCache();
+      const user = users.find(u => u.username === currentUser);
+      
+      if (!user || (user.password && user.password !== current)) {
+        msgEl.textContent = '❌ Mevcut şifre hatalı!';
+        msgEl.style.color = '#ef4444';
+        return false;
+      }
+      
       user.password = newPass;
-      saveUsers();
+      localStorage.setItem(LS_USERS_KEY, JSON.stringify(users));
       
       msgEl.textContent = '✅ Şifre başarıyla değiştirildi!';
       msgEl.style.color = '#10b981';
@@ -559,7 +324,7 @@
       return false;
     }
     
-    function addUser(event) {
+    async function addUser(event) {
       event.preventDefault();
       
       const username = document.getElementById('newUsername').value.trim();
@@ -567,7 +332,38 @@
       const role = document.getElementById('newUserRole').value;
       const msgEl = document.getElementById('userMessage');
       
-      loadUsers();
+      if (!username || !password) {
+        msgEl.textContent = '❌ Kullanıcı adı ve şifre zorunlu!';
+        msgEl.style.color = '#ef4444';
+        return false;
+      }
+      
+      // Sunucuya ekle
+      if (isOnline) {
+        try {
+          await apiCall('/users', {
+            method: 'POST',
+            body: JSON.stringify({ username, password, role })
+          });
+          
+          await loadUsers();
+          
+          msgEl.textContent = '✅ Kullanıcı eklendi!';
+          msgEl.style.color = '#10b981';
+          
+          document.getElementById('newUsername').value = '';
+          document.getElementById('newUserPassword').value = '';
+          
+          setTimeout(() => showSettings(), 800);
+          return false;
+        } catch (error) {
+          // Sunucu hatası, yerel ekle
+          console.log('Sunucu hatası, yerel ekleniyor');
+        }
+      }
+      
+      // Yerel ekle (offline veya sunucu hatası)
+      loadUsersFromCache();
       
       if (users.some(u => u.username === username)) {
         msgEl.textContent = '❌ Bu kullanıcı adı zaten var!';
@@ -575,32 +371,35 @@
         return false;
       }
       
-      users.push({ username, password, role });
-      saveUsers();
+      users.push({ id: 'local-' + Date.now(), username, password, role });
+      localStorage.setItem(LS_USERS_KEY, JSON.stringify(users));
       
-      msgEl.textContent = '✅ Kullanıcı eklendi!';
+      msgEl.textContent = '✅ Kullanıcı yerel olarak eklendi!';
       msgEl.style.color = '#10b981';
       
-      document.getElementById('newUsername').value = '';
-      document.getElementById('newUserPassword').value = '';
-      
       setTimeout(() => showSettings(), 800);
-      
       return false;
     }
     
-    function deleteUser(username) {
-      if (!confirm(`'${username}' kullanıcısını silmek istediğinize emin misiniz?`)) return;
+    async function deleteUser(userId) {
+      if (!confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?')) return;
       
-      loadUsers();
-      
-      if (username === 'admin') {
-        showToast('Admin kullanıcısı silinemez!');
-        return;
+      if (isOnline && !userId.startsWith('local-')) {
+        try {
+          await apiCall('/users/' + userId, { method: 'DELETE' });
+          await loadUsers();
+          showToast('Kullanıcı silindi');
+          showSettings();
+          return;
+        } catch (e) {
+          console.log('Sunucu silme hatası');
+        }
       }
       
-      users = users.filter(u => u.username !== username);
-      saveUsers();
+      // Yerel sil
+      loadUsersFromCache();
+      users = users.filter(u => u.id !== userId && u.username !== userId);
+      localStorage.setItem(LS_USERS_KEY, JSON.stringify(users));
       
       showToast('Kullanıcı silindi');
       showSettings();
@@ -669,7 +468,7 @@
       });
     }
     
-    // ==================== AĞ DURUMU ====================
+    // ==================== AĞ & API ====================
     
     function updateOnlineStatus() {
       isOnline = navigator.onLine;
@@ -690,8 +489,6 @@
     window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
     
-    // ==================== API ====================
-    
     async function apiCall(endpoint, options = {}) {
       try {
         const response = await fetch(`${API_URL}${endpoint}`, {
@@ -710,8 +507,6 @@
       }
     }
     
-    // ==================== SENKRONİZASYON ====================
-    
     async function syncData() {
       if (!isOnline) return;
       
@@ -721,7 +516,6 @@
         const unsyncedTrans = localTransactions.filter(t => !t.synced);
         
         if (unsyncedTrans.length === 0 && localCustomers.length === 0) {
-          // Sadece sunucudan çek
           await loadData();
           return;
         }
@@ -734,7 +528,6 @@
           })
         });
         
-        // Sunucu verilerini birleştir (ezme yok)
         for (const customer of result.customers) {
           await dbPut('customers', customer);
         }
@@ -748,7 +541,6 @@
           }
         }
         
-        // Senkronize olanları işaretle
         for (const t of unsyncedTrans) {
           const updated = { ...t, synced: true };
           await dbPut('transactions', updated);
@@ -759,11 +551,8 @@
         
       } catch (error) {
         console.error('Senkronizasyon hatası:', error);
-        showToast('⚠️ Senkronizasyon başarısız');
       }
     }
-    
-    // ==================== VERİ YÜKLEME ====================
     
     async function loadData() {
       if (isOnline) {
@@ -771,12 +560,10 @@
           const serverCustomers = await apiCall('/customers');
           const serverTransactions = await apiCall('/transactions').catch(() => []);
           
-          // Müşterileri güncelle
           for (const c of serverCustomers) {
             await dbPut('customers', c);
           }
           
-          // Hareketleri birleştir (ezme yok)
           const localTransactions = await dbGetAll('transactions');
           
           for (const t of serverTransactions) {
@@ -790,7 +577,7 @@
           transactions = await dbGetAll('transactions');
           
         } catch (error) {
-          console.log('Sunucu hatası, yerel veriler kullanılıyor:', error);
+          console.log('Sunucu hatası, yerel veriler kullanılıyor');
           customers = await dbGetAll('customers');
           transactions = await dbGetAll('transactions');
         }
@@ -802,7 +589,7 @@
       renderPage();
     }
     
-    // ==================== SAYFA RENDER ====================
+    // ==================== SAYFALAR ====================
     
     function renderPage() {
       const content = document.getElementById('content');
@@ -820,38 +607,24 @@
       renderPage();
     }
     
-    // ==================== MÜŞTERİLER ====================
-    
     function renderCustomers(container) {
       const searchHtml = `<input type="text" class="search-box" placeholder="🔍 Müşteri ara..." oninput="filterCustomers(this.value)">`;
       
       if (customers.length === 0) {
-        container.innerHTML = searchHtml + `
-          <div class="empty-state">
-            <h3>Henüz müşteri yok</h3>
-            <p>Alttaki + butonuna tıklayarak müşteri ekleyin</p>
-          </div>`;
+        container.innerHTML = searchHtml + `<div class="empty-state"><h3>Henüz müşteri yok</h3><p>Alttaki + butonuna tıklayarak müşteri ekleyin</p></div>`;
         return;
       }
       
       let html = searchHtml + '<div id="customerList">';
+      const sorted = [...customers].sort((a, b) => a.name.localeCompare(b.name));
       
-      const sortedCustomers = [...customers].sort((a, b) => a.name.localeCompare(b.name));
-      
-      sortedCustomers.forEach(customer => {
+      sorted.forEach(customer => {
         const balanceClass = customer.balance > 0 ? 'positive' : customer.balance < 0 ? 'negative' : 'zero';
-        const balanceText = customer.balance > 0 
-          ? `₺${parseFloat(customer.balance).toFixed(2)}` 
-          : customer.balance < 0 
-            ? `-₺${Math.abs(parseFloat(customer.balance)).toFixed(2)}` 
-            : '₺0.00';
+        const balanceText = customer.balance > 0 ? `₺${parseFloat(customer.balance).toFixed(2)}` : customer.balance < 0 ? `-₺${Math.abs(parseFloat(customer.balance)).toFixed(2)}` : '₺0.00';
         
         html += `
           <div class="customer-item" onclick="showCustomerDetail('${customer.id}')">
-            <div class="customer-info">
-              <h3>${escapeHtml(customer.name)}</h3>
-              <p>📞 ${escapeHtml(customer.phone) || 'Telefon yok'}</p>
-            </div>
+            <div class="customer-info"><h3>${escapeHtml(customer.name)}</h3><p>📞 ${escapeHtml(customer.phone) || 'Telefon yok'}</p></div>
             <div class="balance ${balanceClass}">${balanceText}</div>
           </div>`;
       });
@@ -862,75 +635,51 @@
     
     function filterCustomers(query) {
       const items = document.querySelectorAll('.customer-item');
-      const lowerQuery = query.toLowerCase();
+      const lower = query.toLowerCase();
       items.forEach(item => {
         const name = item.querySelector('h3').textContent.toLowerCase();
-        item.style.display = name.includes(lowerQuery) ? 'flex' : 'none';
+        item.style.display = name.includes(lower) ? 'flex' : 'none';
       });
     }
-    
-    // ==================== MÜŞTERİ DETAY ====================
     
     function showCustomerDetail(customerId) {
       const customer = customers.find(c => c.id === customerId);
       if (!customer) return;
       
-      const customerTransactions = transactions
-        .filter(t => t.customer_id === customerId)
-        .sort((a, b) => new Date(b.date) - new Date(a.date));
-      
+      const customerTrans = transactions.filter(t => t.customer_id === customerId).sort((a, b) => new Date(b.date) - new Date(a.date));
       const modal = document.getElementById('modal');
       const content = document.getElementById('modalContent');
-      
       const balanceClass = customer.balance > 0 ? 'positive' : customer.balance < 0 ? 'negative' : 'zero';
       
       let html = `
-        <div class="card-header">
-          <h2>${escapeHtml(customer.name)}</h2>
-          <button class="btn btn-danger" onclick="closeModal()">✕</button>
-        </div>
-        
+        <div class="card-header"><h2>${escapeHtml(customer.name)}</h2><button class="btn btn-danger" onclick="closeModal()">✕</button></div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;">
           <button class="btn btn-warning" onclick="showEditCustomerForm('${customer.id}')">✏️ Düzenle</button>
           <button class="btn btn-danger" onclick="deleteCustomer('${customer.id}')">🗑️ Sil</button>
         </div>
-        
         <div class="card" style="text-align: center;">
           <h4 style="color: #6b7280; margin-bottom: 0.5rem;">Güncel Bakiye</h4>
-          <div class="balance ${balanceClass}" style="font-size: 2rem;">
-            ₺${Math.abs(parseFloat(customer.balance) || 0).toFixed(2)}
-          </div>
-          <p style="color: #6b7280; margin-top: 0.5rem;">
-            ${customer.balance > 0 ? 'Borçlu' : customer.balance < 0 ? 'Alacaklı' : 'Bakiye yok'}
-          </p>
+          <div class="balance ${balanceClass}" style="font-size: 2rem;">₺${Math.abs(parseFloat(customer.balance) || 0).toFixed(2)}</div>
+          <p style="color: #6b7280; margin-top: 0.5rem;">${customer.balance > 0 ? 'Borçlu' : customer.balance < 0 ? 'Alacaklı' : 'Bakiye yok'}</p>
         </div>
-        
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;">
           <button class="btn btn-danger" onclick="showTransactionForm('${customer.id}', 'debt')">➕ Borç Ekle</button>
           <button class="btn btn-success" onclick="showTransactionForm('${customer.id}', 'payment')">💵 Ödeme Al</button>
         </div>
-        
         <h3 style="margin-bottom: 0.75rem;">📝 Hareket Geçmişi</h3>`;
       
-      if (customerTransactions.length === 0) {
+      if (customerTrans.length === 0) {
         html += '<p style="color: #6b7280; text-align: center;">Henüz hareket yok</p>';
       } else {
         html += '<div style="max-height: 300px; overflow-y: auto;">';
-        customerTransactions.forEach(t => {
+        customerTrans.forEach(t => {
           const typeClass = t.type === 'debt' ? 'type-debt' : 'type-payment';
           const typeText = t.type === 'debt' ? 'Borç' : 'Ödeme';
           const sign = t.type === 'debt' ? '+' : '-';
-          
           html += `
             <div class="transaction-item">
-              <div>
-                <span class="transaction-type ${typeClass}">${typeText}</span>
-                <p style="font-size: 0.8rem; color: #6b7280; margin-top: 0.25rem;">${new Date(t.date).toLocaleDateString('tr-TR')}</p>
-                <p style="font-size: 0.8rem; color: #374151;">${escapeHtml(t.description) || ''}</p>
-              </div>
-              <div style="font-weight: 700; color: ${t.type === 'debt' ? '#ef4444' : '#10b981'};">
-                ${sign}₺${parseFloat(t.amount).toFixed(2)}
-              </div>
+              <div><span class="transaction-type ${typeClass}">${typeText}</span><p style="font-size: 0.8rem; color: #6b7280; margin-top: 0.25rem;">${new Date(t.date).toLocaleDateString('tr-TR')}</p><p style="font-size: 0.8rem; color: #374151;">${escapeHtml(t.description) || ''}</p></div>
+              <div style="font-weight: 700; color: ${t.type === 'debt' ? '#ef4444' : '#10b981'};">${sign}₺${parseFloat(t.amount).toFixed(2)}</div>
             </div>`;
         });
         html += '</div>';
@@ -940,37 +689,18 @@
       modal.classList.add('active');
     }
     
-    // ==================== MÜŞTERİ DÜZENLEME ====================
-    
     function showEditCustomerForm(customerId) {
       const customer = customers.find(c => c.id === customerId);
       if (!customer) return;
       
       const content = document.getElementById('modalContent');
-      
       content.innerHTML = `
-        <div class="card-header">
-          <h2>✏️ Müşteri Düzenle</h2>
-          <button class="btn btn-danger" onclick="closeModal()">✕</button>
-        </div>
-        
+        <div class="card-header"><h2>✏️ Müşteri Düzenle</h2><button class="btn btn-danger" onclick="closeModal()">✕</button></div>
         <form onsubmit="return editCustomer(event, '${customer.id}')">
-          <div class="form-group">
-            <label>Ad Soyad / Firma Adı *</label>
-            <input type="text" id="editName" required value="${escapeHtml(customer.name)}">
-          </div>
-          <div class="form-group">
-            <label>Telefon</label>
-            <input type="tel" id="editPhone" value="${escapeHtml(customer.phone) || ''}">
-          </div>
-          <div class="form-group">
-            <label>Adres</label>
-            <input type="text" id="editAddress" value="${escapeHtml(customer.address) || ''}">
-          </div>
-          <div class="form-group">
-            <label>Vergi No / TC</label>
-            <input type="text" id="editTax" value="${escapeHtml(customer.tax_number) || ''}">
-          </div>
+          <div class="form-group"><label>Ad Soyad / Firma Adı *</label><input type="text" id="editName" required value="${escapeHtml(customer.name)}"></div>
+          <div class="form-group"><label>Telefon</label><input type="tel" id="editPhone" value="${escapeHtml(customer.phone) || ''}"></div>
+          <div class="form-group"><label>Adres</label><input type="text" id="editAddress" value="${escapeHtml(customer.address) || ''}"></div>
+          <div class="form-group"><label>Vergi No / TC</label><input type="text" id="editTax" value="${escapeHtml(customer.tax_number) || ''}"></div>
           <button type="submit" class="btn btn-primary btn-block">💾 Güncelle</button>
         </form>`;
     }
@@ -993,27 +723,16 @@
         try {
           await apiCall('/customers/' + customerId, {
             method: 'PUT',
-            body: JSON.stringify({
-              name: customer.name,
-              phone: customer.phone,
-              address: customer.address,
-              tax_number: customer.tax_number,
-              balance: customer.balance
-            })
+            body: JSON.stringify({ name: customer.name, phone: customer.phone, address: customer.address, tax_number: customer.tax_number, balance: customer.balance })
           });
-        } catch (e) {
-          console.log('Sunucu güncellemesi beklemeye alındı');
-        }
+        } catch (e) { console.log('Sunucu güncellemesi beklemeye alındı'); }
       }
       
       showToast('Müşteri güncellendi');
       closeModal();
       renderPage();
-      
       return false;
     }
-    
-    // ==================== MÜŞTERİ SİLME ====================
     
     async function deleteCustomer(customerId) {
       if (!confirm('Bu müşteriyi ve tüm hareketlerini silmek istediğinize emin misiniz?')) return;
@@ -1022,17 +741,12 @@
       customers = customers.filter(c => c.id !== customerId);
       
       const customerTrans = transactions.filter(t => t.customer_id === customerId);
-      for (const t of customerTrans) {
-        await dbDelete('transactions', t.id);
-      }
+      for (const t of customerTrans) await dbDelete('transactions', t.id);
       transactions = transactions.filter(t => t.customer_id !== customerId);
       
       if (isOnline) {
-        try {
-          await apiCall('/customers/' + customerId, { method: 'DELETE' });
-        } catch (e) {
-          console.log('Sunucu silme beklemeye alındı');
-        }
+        try { await apiCall('/customers/' + customerId, { method: 'DELETE' }); } 
+        catch (e) { console.log('Sunucu silme beklemeye alındı'); }
       }
       
       showToast('Müşteri silindi');
@@ -1040,32 +754,17 @@
       renderPage();
     }
     
-    // ==================== HAREKET EKLEME ====================
-    
     function showTransactionForm(customerId, type) {
       const content = document.getElementById('modalContent');
       const typeText = type === 'debt' ? 'Borç Ekle' : 'Ödeme Al';
       const btnClass = type === 'debt' ? 'btn-danger' : 'btn-success';
       
       content.innerHTML = `
-        <div class="card-header">
-          <h2>${typeText}</h2>
-          <button class="btn btn-danger" onclick="closeModal()">✕</button>
-        </div>
-        
+        <div class="card-header"><h2>${typeText}</h2><button class="btn btn-danger" onclick="closeModal()">✕</button></div>
         <form onsubmit="return addTransaction(event, '${customerId}', '${type}')">
-          <div class="form-group">
-            <label>Tutar (₺)</label>
-            <input type="number" step="0.01" id="amount" required placeholder="0.00">
-          </div>
-          <div class="form-group">
-            <label>Açıklama</label>
-            <input type="text" id="description" placeholder="Örn: Malzeme alımı">
-          </div>
-          <div class="form-group">
-            <label>Tarih</label>
-            <input type="date" id="transDate" value="${new Date().toISOString().split('T')[0]}">
-          </div>
+          <div class="form-group"><label>Tutar (₺)</label><input type="number" step="0.01" id="amount" required placeholder="0.00"></div>
+          <div class="form-group"><label>Açıklama</label><input type="text" id="description" placeholder="Örn: Malzeme alımı"></div>
+          <div class="form-group"><label>Tarih</label><input type="date" id="transDate" value="${new Date().toISOString().split('T')[0]}"></div>
           <button type="submit" class="btn ${btnClass} btn-block">${typeText}</button>
         </form>`;
     }
@@ -1099,7 +798,6 @@
       if (customer) {
         const oldBalance = parseFloat(customer.balance) || 0;
         const newBalance = type === 'debt' ? oldBalance + amount : oldBalance - amount;
-        
         customer.balance = newBalance;
         customer.updated_at = new Date().toISOString();
         await dbPut('customers', customer);
@@ -1116,35 +814,17 @@
       return false;
     }
     
-    // ==================== MÜŞTERİ EKLEME ====================
-    
     function showAddModal() {
       const modal = document.getElementById('modal');
       const content = document.getElementById('modalContent');
       
       content.innerHTML = `
-        <div class="card-header">
-          <h2>👤 Yeni Müşteri</h2>
-          <button class="btn btn-danger" onclick="closeModal()">✕</button>
-        </div>
-        
+        <div class="card-header"><h2>👤 Yeni Müşteri</h2><button class="btn btn-danger" onclick="closeModal()">✕</button></div>
         <form onsubmit="return addCustomer(event)">
-          <div class="form-group">
-            <label>Ad Soyad / Firma Adı *</label>
-            <input type="text" id="custName" required placeholder="Örn: Ahmet Yılmaz">
-          </div>
-          <div class="form-group">
-            <label>Telefon</label>
-            <input type="tel" id="custPhone" placeholder="0555 123 4567">
-          </div>
-          <div class="form-group">
-            <label>Adres</label>
-            <input type="text" id="custAddress" placeholder="İstanbul, Türkiye">
-          </div>
-          <div class="form-group">
-            <label>Vergi No / TC</label>
-            <input type="text" id="custTax" placeholder="1234567890">
-          </div>
+          <div class="form-group"><label>Ad Soyad / Firma Adı *</label><input type="text" id="custName" required placeholder="Örn: Ahmet Yılmaz"></div>
+          <div class="form-group"><label>Telefon</label><input type="tel" id="custPhone" placeholder="0555 123 4567"></div>
+          <div class="form-group"><label>Adres</label><input type="text" id="custAddress" placeholder="İstanbul, Türkiye"></div>
+          <div class="form-group"><label>Vergi No / TC</label><input type="text" id="custTax" placeholder="1234567890"></div>
           <button type="submit" class="btn btn-primary btn-block">💾 Kaydet</button>
         </form>`;
       
@@ -1155,7 +835,6 @@
       event.preventDefault();
       
       const name = document.getElementById('custName').value.trim();
-      
       if (!name) {
         showToast('❌ İsim zorunludur!');
         return false;
@@ -1184,17 +863,11 @@
       return false;
     }
     
-    // ==================== TÜM HAREKETLER ====================
-    
     function renderTransactions(container) {
       const allTrans = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
       
       if (allTrans.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <h3>Henüz hareket yok</h3>
-            <p>Müşteri detayından hareket ekleyebilirsiniz</p>
-          </div>`;
+        container.innerHTML = `<div class="empty-state"><h3>Henüz hareket yok</h3><p>Müşteri detayından hareket ekleyebilirsiniz</p></div>`;
         return;
       }
       
@@ -1211,13 +884,9 @@
               <div>
                 <strong>${customer ? escapeHtml(customer.name) : 'Bilinmeyen'}</strong>
                 <span class="transaction-type ${typeClass}" style="margin-left: 0.5rem;">${typeText}</span>
-                <p style="font-size: 0.8rem; color: #6b7280; margin-top: 0.25rem;">
-                  ${new Date(t.date).toLocaleDateString('tr-TR')} • ${escapeHtml(t.description) || 'Açıklama yok'}
-                </p>
+                <p style="font-size: 0.8rem; color: #6b7280; margin-top: 0.25rem;">${new Date(t.date).toLocaleDateString('tr-TR')} • ${escapeHtml(t.description) || 'Açıklama yok'}</p>
               </div>
-              <div style="font-weight: 700; font-size: 1.1rem; color: ${t.type === 'debt' ? '#ef4444' : '#10b981'};">
-                ${t.type === 'debt' ? '+' : '-'}₺${parseFloat(t.amount).toFixed(2)}
-              </div>
+              <div style="font-weight: 700; font-size: 1.1rem; color: ${t.type === 'debt' ? '#ef4444' : '#10b981'};">${t.type === 'debt' ? '+' : '-'}₺${parseFloat(t.amount).toFixed(2)}</div>
             </div>
           </div>`;
       });
@@ -1225,57 +894,30 @@
       container.innerHTML = html;
     }
     
-    // ==================== RAPOR ====================
-    
     function renderReport(container) {
-      const totalDebt = customers
-        .filter(c => c.balance > 0)
-        .reduce((sum, c) => sum + (parseFloat(c.balance) || 0), 0);
-      
-      const totalCredit = customers
-        .filter(c => c.balance < 0)
-        .reduce((sum, c) => sum + (parseFloat(c.balance) || 0), 0);
-      
+      const totalDebt = customers.filter(c => c.balance > 0).reduce((sum, c) => sum + (parseFloat(c.balance) || 0), 0);
+      const totalCredit = customers.filter(c => c.balance < 0).reduce((sum, c) => sum + (parseFloat(c.balance) || 0), 0);
       const netBalance = totalDebt + totalCredit;
       
-      const debtors = customers
-        .filter(c => c.balance > 0)
-        .sort((a, b) => b.balance - a.balance);
-      
-      const creditors = customers
-        .filter(c => c.balance < 0)
-        .sort((a, b) => a.balance - b.balance);
+      const debtors = customers.filter(c => c.balance > 0).sort((a, b) => b.balance - a.balance);
+      const creditors = customers.filter(c => c.balance < 0).sort((a, b) => a.balance - b.balance);
       
       let html = `
         <div class="summary-grid">
-          <div class="summary-card">
-            <h4>📤 Toplam Borç</h4>
-            <div class="amount" style="color: #ef4444;">₺${totalDebt.toFixed(2)}</div>
-          </div>
-          <div class="summary-card">
-            <h4>📥 Toplam Alacak</h4>
-            <div class="amount" style="color: #10b981;">₺${Math.abs(totalCredit).toFixed(2)}</div>
-          </div>
+          <div class="summary-card"><h4>📤 Toplam Borç</h4><div class="amount" style="color: #ef4444;">₺${totalDebt.toFixed(2)}</div></div>
+          <div class="summary-card"><h4>📥 Toplam Alacak</h4><div class="amount" style="color: #10b981;">₺${Math.abs(totalCredit).toFixed(2)}</div></div>
         </div>
-        
         <div class="card" style="text-align: center; margin-bottom: 1rem;">
           <h4 style="color: #6b7280; margin-bottom: 0.5rem;">Net Bakiye</h4>
-          <div class="amount" style="font-size: 1.75rem; color: ${netBalance >= 0 ? '#ef4444' : '#10b981'};">
-            ₺${Math.abs(netBalance).toFixed(2)}
-          </div>
+          <div class="amount" style="font-size: 1.75rem; color: ${netBalance >= 0 ? '#ef4444' : '#10b981'};">₺${Math.abs(netBalance).toFixed(2)}</div>
         </div>
-        
         <h3 style="margin-bottom: 0.75rem;">🔴 Borçlu Müşteriler</h3>`;
       
       if (debtors.length === 0) {
         html += '<p style="color: #6b7280; margin-bottom: 1rem;">Borçlu müşteri yok</p>';
       } else {
         debtors.forEach(c => {
-          html += `
-            <div class="customer-item" onclick="showCustomerDetail('${c.id}')">
-              <div class="customer-info"><h3>${escapeHtml(c.name)}</h3></div>
-              <div class="balance positive">₺${(parseFloat(c.balance) || 0).toFixed(2)}</div>
-            </div>`;
+          html += `<div class="customer-item" onclick="showCustomerDetail('${c.id}')"><div class="customer-info"><h3>${escapeHtml(c.name)}</h3></div><div class="balance positive">₺${(parseFloat(c.balance) || 0).toFixed(2)}</div></div>`;
         });
       }
       
@@ -1285,18 +927,12 @@
         html += '<p style="color: #6b7280;">Alacaklı müşteri yok</p>';
       } else {
         creditors.forEach(c => {
-          html += `
-            <div class="customer-item" onclick="showCustomerDetail('${c.id}')">
-              <div class="customer-info"><h3>${escapeHtml(c.name)}</h3></div>
-              <div class="balance negative">-₺${Math.abs(parseFloat(c.balance) || 0).toFixed(2)}</div>
-            </div>`;
+          html += `<div class="customer-item" onclick="showCustomerDetail('${c.id}')"><div class="customer-info"><h3>${escapeHtml(c.name)}</h3></div><div class="balance negative">-₺${Math.abs(parseFloat(c.balance) || 0).toFixed(2)}</div></div>`;
         });
       }
       
       container.innerHTML = html;
     }
-    
-    // ==================== YARDIMCI FONKSİYONLAR ====================
     
     function closeModal() {
       document.getElementById('modal').classList.remove('active');
@@ -1321,8 +957,6 @@
       if (e.target.id === 'modal') closeModal();
     });
     
-    // ==================== BAŞLATMA ====================
-    
     async function initApp() {
       try {
         await initDB();
@@ -1334,7 +968,6 @@
       }
     }
     
-    // Sayfa yüklendiğinde
     checkLogin();
   </script>
 </body>
