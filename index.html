@@ -370,7 +370,20 @@
     }
     
     function checkLogin() {
-  loadUsers();
+  // Kullanıcıları yükle veya varsayılan oluştur
+  try {
+    const saved = localStorage.getItem('kayitdefteri_users');
+    if (saved) {
+      users = JSON.parse(saved);
+    } else {
+      users = [{ username: 'admin', password: 'admin', role: 'admin' }];
+      localStorage.setItem('kayitdefteri_users', JSON.stringify(users));
+    }
+  } catch (e) {
+    users = [{ username: 'admin', password: 'admin', role: 'admin' }];
+    localStorage.setItem('kayitdefteri_users', JSON.stringify(users));
+  }
+  
   const savedUser = localStorage.getItem('kayitdefteri_user');
   if (savedUser) {
     currentUser = savedUser;
