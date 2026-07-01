@@ -173,3 +173,47 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server ${PORT} portunda calisiyor`));
+
+// ============ KULLANICI YÖNETİMİ ============
+
+app.get('/api/users', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('app_users').select('id, username, role, created_at').order('username');
+    if (error) throw error;
+    res.json(data || []);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/users', async (req, res) => {
+  try {
+    const { username, password, role } = req.body;
+    const { data, error } = await supabase.from('app_users').insert([{ username, password, role: role || 'user' }]).select().single();
+    if (error) throw error;
+    res.status(201).json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/users/:id', async (req, res) => {
+  try {
+    const { error } = await supabase.from('app_users').delete().eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const { data, error } = await supabase.from('app_users').select('*').eq('username', username).eq('password', password).single();
+    if (error || !data) return res.status(401).json({ error: 'Hatalı giriş' });
+    res.json({ success: true, user: { id: data.id, username: data.username, role: data.role } });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
