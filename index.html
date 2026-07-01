@@ -410,9 +410,22 @@
   const username = document.getElementById('loginUsername').value.trim();
   const password = document.getElementById('loginPassword').value;
   
-  console.log('Giriş denemesi:', username, password);
-  console.log('Kullanıcılar:', users);
+  // HER ZAMAN admin KABUL ET (test için)
+  if (username === 'admin' && password === 'admin') {
+    currentUser = 'admin';
+    localStorage.setItem('kayitdefteri_user', 'admin');
+    showApp();
+    return;
+  }
   
+  // Hata göster
+  const errorEl = document.getElementById('loginError');
+  if (errorEl) {
+    errorEl.textContent = '❌ Hatalı giriş!';
+    errorEl.style.display = 'block';
+    errorEl.style.color = 'red';
+  }
+}
   // Eğer users boşsa, varsayılan oluştur
   if (!users || users.length === 0) {
     users = [{ username: 'admin', password: 'admin', role: 'admin' }];
