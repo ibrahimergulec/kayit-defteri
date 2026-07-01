@@ -370,15 +370,15 @@
     }
     
     function checkLogin() {
-      loadUsers();
-      const savedUser = localStorage.getItem('kayitdefteri_user');
-      if (savedUser) {
-        currentUser = savedUser;
-        showApp();
-      } else {
-        showLogin();
-      }
-    }
+  loadUsers();
+  const savedUser = localStorage.getItem('kayitdefteri_user');
+  if (savedUser) {
+    currentUser = savedUser;
+    showApp();
+  } else {
+    showLogin();
+  }
+}
     
     function showLogin() {
       document.getElementById('loginScreen').classList.remove('hidden');
